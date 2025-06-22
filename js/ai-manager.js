@@ -14,11 +14,15 @@ class AIManager {
 
     async init() {
         try {
+            console.log('🔧 AI Manager - Iniciando...');
             const response = await fetch('/config/ai-config.json');
             this.config = await response.json();
+            console.log('📋 Configuração carregada:', this.config);
             
             // Verificar se a API key está configurada
             this.apiKey = this.config.openai.apiKey;
+            console.log('🔑 API Key encontrada:', this.apiKey ? 'Sim' : 'Não');
+            
             if (this.apiKey && this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE') {
                 this.isInitialized = true;
                 console.log('✅ AI Manager inicializado com OpenAI');
@@ -48,15 +52,25 @@ class AIManager {
      * @returns {Promise<Object>} História gerada
      */
     async generateStory(params = {}) {
+        console.log('🔍 AI Manager - generateStory chamado com params:', params);
+        
         if (!this.isInitialized) {
-            console.log('Usando história de fallback');
+            console.log('⚠️ AI Manager não inicializado - usando fallback');
             return this.getFallbackStory(params);
         }
 
         try {
+            console.log('🚀 Chamando OpenAI API...');
             const prompt = this.buildPrompt(params);
+            console.log('📝 Prompt gerado:', prompt);
+            
             const story = await this.callOpenAI(prompt);
-            return this.parseStoryResponse(story);
+            console.log('✅ Resposta da OpenAI:', story);
+            
+            const parsedStory = this.parseStoryResponse(story);
+            console.log('📖 História processada:', parsedStory);
+            
+            return parsedStory;
         } catch (error) {
             console.error('❌ Erro ao gerar história com OpenAI:', error);
             return this.getFallbackStory(params);

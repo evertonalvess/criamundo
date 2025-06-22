@@ -1,126 +1,74 @@
 {
-  "ai": {
-    "enabled": false,
-    "providers": {
-      "openai": {
-        "enabled": false,
-        "apiKey": "YOUR_OPENAI_API_KEY_HERE",
+    "openai": {
+        "apiKey": "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",
         "model": "gpt-4o-mini",
         "maxTokens": 1000,
         "temperature": 0.8,
         "systemPrompt": "Você é um contador de histórias especializado em criar narrativas mágicas e educativas para crianças de 4 a 9 anos. Suas histórias devem ser:\n\n1. **Simples e claras**: Use linguagem acessível para crianças\n2. **Mágicas e envolventes**: Inclua elementos fantásticos e personagens carismáticos\n3. **Educativas**: Transmita valores como amizade, coragem, respeito e curiosidade\n4. **Estruturadas**: Histórias com início, meio e fim bem definidos\n5. **Interativas**: Que inspirem a imaginação e criatividade\n\nFormato de resposta:\n- Título criativo e atrativo\n- 3-4 parágrafos curtos (máximo 2-3 frases cada)\n- Linguagem simples e direta\n- Final positivo e inspirador\n\nEvite temas assustadores, violência ou conteúdo inadequado para crianças."
-      },
-      "anthropic": {
-        "enabled": false,
-        "apiKey": "",
-        "model": "claude-3-sonnet",
-        "maxTokens": 1000
-      },
-      "local": {
-        "enabled": false,
-        "endpoint": "http://localhost:3000/generate",
-        "model": "llama-3.1-8b"
-      }
     },
-    "prompts": {
-      "storyGeneration": {
-        "system": "Você é um contador de histórias mágicas para crianças de 4 a 9 anos. Crie histórias educativas, divertidas e apropriadas para a idade, com personagens cativantes e mensagens positivas.",
-        "user": "Crie uma história curta e mágica sobre {tema} com personagens {personagens}. A história deve ter entre 3-5 parágrafos, ser educativa e divertida para crianças de 4-9 anos.",
-        "examples": [
-          {
-            "tema": "amizade e cooperação",
-            "personagens": "um gato e um cachorro",
-            "resultado": "O Gato e o Cachorro Mágicos"
-          },
-          {
-            "tema": "coragem e superação",
-            "personagens": "uma pequena coruja",
-            "resultado": "A Coruja Corajosa"
-          }
+    "voice": {
+        "recognition": {
+            "lang": "pt-BR",
+            "continuous": true,
+            "interimResults": true
+        },
+        "synthesis": {
+            "lang": "pt-BR",
+            "rate": 0.8,
+            "pitch": 1.2,
+            "voice": "female"
+        }
+    },
+    "story": {
+        "themes": [
+            "amizade",
+            "coragem", 
+            "aventura",
+            "magia",
+            "natureza",
+            "espaço",
+            "animais",
+            "família",
+            "descoberta",
+            "superação"
+        ],
+        "characters": [
+            "gato mágico",
+            "dragão amigável",
+            "fada bondosa",
+            "princesa corajosa",
+            "príncipe gentil",
+            "unicórnio",
+            "sereia",
+            "pássaro falante",
+            "urso sábio",
+            "coelho aventureiro"
+        ],
+        "settings": [
+            "floresta encantada",
+            "castelo mágico",
+            "ilha misteriosa",
+            "montanha de cristal",
+            "cidade flutuante",
+            "jardim secreto",
+            "caverna de tesouros",
+            "nuvem mágica",
+            "oceano profundo",
+            "galáxia distante"
         ]
-      },
-      "imageGeneration": {
-        "system": "Você é um artista especializado em ilustrações infantis. Crie imagens coloridas, seguras e apropriadas para crianças.",
-        "user": "Crie uma ilustração para a história '{titulo}' mostrando {cena}. Estilo: infantil, colorido, seguro para crianças."
-      },
-      "audioGeneration": {
-        "system": "Você é um narrador de histórias infantis. Use uma voz clara, expressiva e amigável.",
-        "user": "Narre a história '{titulo}' com entonação apropriada para crianças."
-      }
     },
-    "storyStructure": {
-      "maxParagraphs": 6,
-      "maxWordsPerParagraph": 50,
-      "requiredElements": [
-        "personagem principal",
-        "desafio ou problema",
-        "resolução",
-        "mensagem positiva"
-      ],
-      "themes": [
-        "amizade",
-        "coragem",
-        "cooperação",
-        "criatividade",
-        "perseverança",
-        "bondade",
-        "responsabilidade",
-        "curiosidade"
-      ],
-      "characterTypes": [
-        "animais",
-        "criaturas mágicas",
-        "crianças",
-        "super-heróis",
-        "princesas e príncipes",
-        "profissionais"
-      ]
+    "fallback": {
+        "enabled": true,
+        "stories": [
+            {
+                "title": "O Dragão Estelar e a Fada Azul",
+                "paragraphs": [
+                    "Era uma vez um dragão pequeno e tímido que vivia nas nuvens. Ele tinha asas brilhantes como estrelas e adorava observar as crianças brincando na terra.",
+                    "Um dia, ele viu uma fada azul perdida no jardim. Ela não conseguia voar de volta para casa porque havia perdido sua varinha mágica.",
+                    "O dragão, mesmo com medo, desceu das nuvens para ajudar. Juntos, eles procuraram a varinha mágica e encontraram uma amizade verdadeira.",
+                    "Agora, todas as noites, o dragão e a fada voam juntos pelas estrelas, iluminando os sonhos das crianças com sua magia especial."
+                ]
+            }
+        ]
     }
-  },
-  "features": {
-    "voiceRecognition": {
-      "enabled": false,
-      "provider": "web-speech-api",
-      "language": "pt-BR",
-      "continuous": true,
-      "interimResults": true
-    },
-    "textToSpeech": {
-      "enabled": false,
-      "provider": "web-speech-api",
-      "voice": "pt-BR",
-      "rate": 0.9,
-      "pitch": 1.0
-    },
-    "imageGeneration": {
-      "enabled": false,
-      "provider": "dalle",
-      "style": "children-book",
-      "size": "1024x1024"
-    }
-  },
-  "ui": {
-    "loadingMessages": [
-      "Pensando em uma história mágica...",
-      "Criando personagens especiais...",
-      "Desenhando cenários incríveis...",
-      "Finalizando sua história...",
-      "Preparando para você ouvir..."
-    ],
-    "errorMessages": {
-      "network": "Ops! Parece que perdemos a conexão. Tente novamente!",
-      "ai": "A IA está descansando. Vamos usar uma história especial!",
-      "voice": "Não consegui ouvir bem. Pode falar mais alto?",
-      "general": "Algo deu errado. Vamos tentar de novo?"
-    }
-  },
-  "fallback": {
-    "stories": [
-      "dragao-estelar-fada-azul",
-      "gato-cachorro-magicos",
-      "coruja-corajosa",
-      "pequeno-dragao-verde"
-    ],
-    "enableOfflineMode": true
-  }
 } 
