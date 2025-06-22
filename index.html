@@ -9,274 +9,33 @@
     <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
 </head>
 <body>
-    <div id="app">
-        <!-- Tela Inicial -->
-        <div id="home-screen" class="screen active">
-            <div class="container">
-                <div class="logo">
-                    <h1>Criamundo</h1>
-                    <p class="subtitle">Criando Histórias Mágicas com IA</p>
-                </div>
-                
-                <div class="main-content">
-                    <div class="hero-image">
-                        <div class="story-illustration">
-                            <div class="dragon">🐉</div>
-                            <div class="fairy">🧚‍♀️</div>
-                            <div class="stars">⭐</div>
-                            <div class="ai-sparkle">✨</div>
-                        </div>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button id="create-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-text">Criar História com Voz</span>
-                        </button>
-                        
-                        <button id="create-story-ai-btn" class="btn btn-secondary btn-large">
-                            <span class="btn-text">Criar História com IA</span>
-                        </button>
-                        
-                        <div class="info-text">
-                            <p>Conte sua história ou deixe a IA criar uma mágica para você!</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    <p>Para crianças de 4 a 9 anos • Powered by AI</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela: Conte sua história -->
-        <div id="voiceCaptureScreen" class="screen">
-            <div class="header">
-                <button class="back-btn" onclick="app.showMainMenu()">Voltar</button>
-                <h1>Conte sua história</h1>
-            </div>
-            
-            <div class="content">
-                <div class="voice-instructions">
-                    <div class="instruction-text" id="instructionText">
-                        <p>Me diga como você quer a história</p>
-                    </div>
-                    <button class="pause-btn" id="pauseBtn" onclick="app.toggleInstructions()">
-                        Pausar
-                    </button>
-                </div>
-                
-                <div class="voice-capture-area">
-                    <div class="microphone-animation" id="micAnimation">
-                        <div class="mic-icon">🎤</div>
-                        <div class="pulse-ring"></div>
-                    </div>
-                    
-                    <div class="voice-status" id="voiceStatus">
-                        <p>Aguardando você falar...</p>
-                    </div>
-                    
-                    <div class="captured-text" id="capturedText">
-                        <!-- Texto capturado aparecerá aqui -->
-                    </div>
-                    
-                    <div class="voice-controls">
-                        <button class="voice-btn" id="startVoiceBtn" onclick="app.startVoiceCapture()">
-                            Começar a Gravar
-                        </button>
-                        <button class="voice-btn" id="stopVoiceBtn" onclick="app.stopVoiceCapture()" style="display: none;">
-                            Parar Gravação
-                        </button>
-                        <button class="play-btn" id="playThemeBtn" onclick="app.playCapturedTheme()" style="display: none;">
-                            Ouvir o que eu falei
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="story-creation">
-                    <button class="create-story-btn" id="createStoryBtn" onclick="app.createStoryFromVoice()" style="display: none;">
-                        Criar Minha História Mágica!
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela de Configuração de IA -->
-        <div id="ai-config-screen" class="screen">
-            <div class="container">
-                <div class="ai-header">
-                    <button id="back-from-ai-btn" class="btn btn-secondary btn-small">
-                        <span>←</span> Voltar
-                    </button>
-                    <h2>Criar História com IA</h2>
-                </div>
-                
-                <div class="ai-content">
-                    <div class="ai-options">
-                        <div class="option-group">
-                            <label for="story-theme">Tema da História:</label>
-                            <select id="story-theme" class="form-select">
-                                <option value="">Escolha um tema...</option>
-                                <option value="amizade">Amizade</option>
-                                <option value="coragem">Coragem</option>
-                                <option value="cooperação">Cooperação</option>
-                                <option value="criatividade">Criatividade</option>
-                                <option value="perseverança">Perseverança</option>
-                                <option value="bondade">Bondade</option>
-                                <option value="responsabilidade">Responsabilidade</option>
-                                <option value="curiosidade">Curiosidade</option>
-                            </select>
-                        </div>
-                        
-                        <div class="option-group">
-                            <label for="story-characters">Personagens:</label>
-                            <select id="story-characters" class="form-select">
-                                <option value="">Escolha personagens...</option>
-                                <option value="animais">Animais</option>
-                                <option value="criaturas mágicas">Criaturas Mágicas</option>
-                                <option value="crianças">Crianças</option>
-                                <option value="super-heróis">Super-Heróis</option>
-                                <option value="princesas e príncipes">Princesas e Príncipes</option>
-                                <option value="profissionais">Profissionais</option>
-                            </select>
-                        </div>
-                        
-                        <div class="option-group">
-                            <label for="story-scenario">Cenário:</label>
-                            <input type="text" id="story-scenario" class="form-input" 
-                                   placeholder="Ex: floresta mágica, castelo no céu...">
-                        </div>
-                    </div>
-                    
-                    <div class="ai-controls">
-                        <button id="generate-ai-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-text">Criar História Mágica</span>
-                        </button>
-                        
-                        <button id="random-story-btn" class="btn btn-secondary btn-large">
-                            <span class="btn-text">História Surpresa</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela de Carregamento -->
-        <div id="loading-screen" class="screen">
-            <div class="container">
-                <div class="loading-content">
-                    <div class="loading-animation">
-                        <div class="spinner"></div>
-                        <div class="stars-loading">
-                            <span>⭐</span>
-                            <span>⭐</span>
-                            <span>⭐</span>
-                        </div>
-                        <div class="ai-loading">
-                            <span>🤖</span>
-                        </div>
-                    </div>
-                    
-                    <h2 id="loading-title">Criando sua história mágica...</h2>
-                    <p id="loading-text" class="loading-text">Aguardando sua voz...</p>
-                    
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela de Leitura -->
-        <div id="story-screen" class="screen">
-            <div class="container">
-                <div class="story-header">
-                    <button id="back-btn" class="btn btn-secondary btn-small">
-                        <span>←</span> Voltar
-                    </button>
-                    <h2 id="story-title">O Dragão Estelar e a Fada Azul</h2>
-                    <div class="story-meta">
-                        <span id="story-source" class="story-source">IA</span>
-                    </div>
-                </div>
-                
-                <div class="story-content">
-                    <div class="story-image">
-                        <div class="story-illustration-large">
-                            <div class="dragon-large">🐉</div>
-                            <div class="fairy-large">🧚‍♀️</div>
-                            <div class="stars-large">⭐⭐⭐</div>
-                            <div class="moon">🌙</div>
-                        </div>
-                    </div>
-                    
-                    <div class="story-text">
-                        <div id="story-paragraphs">
-                            <!-- Conteúdo da história será inserido via JavaScript -->
-                        </div>
-                    </div>
-                    
-                    <div class="story-controls">
-                        <button id="listen-btn" class="btn btn-primary">
-                            <span class="btn-text">Ouvir História</span>
-                        </button>
-                        
-                        <button id="save-share-btn" class="btn btn-secondary">
-                            <span class="btn-text">Salvar & Compartilhar</span>
-                        </button>
-                        
-                        <button id="new-story-btn" class="btn btn-tertiary">
-                            <span class="btn-text">Nova História</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela de Salvar/Compartilhar -->
-        <div id="save-share-screen" class="screen">
-            <div class="container">
-                <div class="save-share-header">
-                    <button id="back-to-story-btn" class="btn btn-secondary btn-small">
-                        <span>←</span> Voltar
-                    </button>
-                    <h2>Salvar & Compartilhar</h2>
-                </div>
-                
-                <div class="save-share-content">
-                    <div class="story-preview">
-                        <h3 id="preview-title">O Dragão Estelar e a Fada Azul</h3>
-                        <div class="preview-image">
-                            <div class="story-illustration-preview">
-                                <div class="dragon-preview">🐉</div>
-                                <div class="fairy-preview">🧚‍♀️</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="action-options">
-                        <button class="btn btn-primary btn-large">
-                            <span class="btn-text">Salvar História</span>
-                        </button>
-                        
-                        <button class="btn btn-secondary btn-large">
-                            <span class="btn-text">Compartilhar</span>
-                        </button>
-                        
-                        <button class="btn btn-tertiary btn-large">
-                            <span class="btn-text">Imprimir</span>
-                        </button>
-                        
-                        <button id="new-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-text">Criar Nova História</span>
-                        </button>
-                    </div>
-                </div>
+    <!-- Container principal - as telas serão carregadas dinamicamente aqui -->
+    <div id="app-container" class="app-container">
+        <!-- Loading inicial -->
+        <div id="initial-loading" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #6C63FF, #FF6FD8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+        ">
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">✨</div>
+                <div>Carregando CriaMundo...</div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="js/screen-manager.js"></script>
     <script src="js/ai-manager.js"></script>
     <script src="js/voice-manager.js"></script>
     <script src="script.js"></script>

@@ -6,35 +6,96 @@
 class AIManager {
     constructor() {
         this.config = null;
-        this.isInitialized = false;
-        this.currentStory = null;
         this.apiKey = null;
+        this.isInitialized = false;
+        this.isInitializing = false; // Flag para evitar inicialização duplicada
+        this.currentStory = null;
         this.init();
     }
 
     async init() {
+        // Evitar inicialização duplicada
+        if (this.isInitialized || this.isInitializing) {
+            return;
+        }
+        
+        this.isInitializing = true;
+        console.log('AI Manager - Iniciando...');
+        
         try {
-            console.log('🔧 AI Manager - Iniciando...');
-            const response = await fetch('/config/ai-config.json');
+            // Carregar configuração
+            const response = await fetch('config/ai-config.json');
             this.config = await response.json();
-            console.log('📋 Configuração carregada:', this.config);
-            
-            // Verificar se a API key está configurada
-            this.apiKey = this.config.openai.apiKey;
-            console.log('🔑 API Key encontrada:', this.apiKey ? 'Sim' : 'Não');
-            console.log('🔑 API Key valor:', this.apiKey ? this.apiKey.substring(0, 20) + '...' : 'N/A');
-            console.log('🔑 API Key é diferente de YOUR_OPENAI_API_KEY_HERE:', this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE');
+            console.log('Configuração carregada:', this.config);
+
+            // Obter API Key de forma segura
+            this.apiKey = await this.getSecureAPIKey();
             
             if (this.apiKey && this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE') {
+                console.log('API Key encontrada: Sim');
+                console.log('API Key é válida: true');
+                console.log('AI Manager inicializado com OpenAI');
                 this.isInitialized = true;
-                console.log('✅ AI Manager inicializado com OpenAI');
             } else {
-                console.log('⚠️ OpenAI não configurado - usando modo fallback');
-                console.log('⚠️ Motivo: API key não configurada ou é o valor padrão');
+                console.log('API Key não configurada, usando modo fallback');
+                this.isInitialized = false;
             }
         } catch (error) {
-            console.error('❌ Erro ao carregar configuração da IA:', error);
+            console.error('Erro ao inicializar AI Manager:', error);
+            this.isInitialized = false;
+        } finally {
+            this.isInitializing = false;
         }
+    }
+
+    async getSecureAPIKey() {
+        // Prioridade 1: Variável de ambiente (mais seguro)
+        if (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) {
+            return process.env.OPENAI_API_KEY;
+        }
+
+        // Prioridade 2: Configuração local (para desenvolvimento)
+        if (this.config && this.config.openai && this.config.openai.apiKey) {
+            const apiKey = this.config.openai.apiKey;
+            
+            // Validação básica de segurança
+            if (this.isValidAPIKey(apiKey)) {
+                return apiKey;
+            }
+        }
+
+        // Prioridade 3: Prompt do usuário (fallback)
+        return await this.promptForAPIKey();
+    }
+
+    isValidAPIKey(apiKey) {
+        if (!apiKey || typeof apiKey !== 'string') {
+            return false;
+        }
+
+        // Verificar se não é o placeholder
+        if (apiKey === 'YOUR_OPENAI_API_KEY_HERE' || apiKey.includes('YOUR_')) {
+            return false;
+        }
+
+        // Verificar formato básico da OpenAI
+        if (!apiKey.startsWith('sk-')) {
+            return false;
+        }
+
+        // Verificar comprimento mínimo
+        if (apiKey.length < 20) {
+            return false;
+        }
+
+        return true;
+    }
+
+    async promptForAPIKey() {
+        // Em um ambiente de produção, isso deveria ser feito no backend
+        // Por enquanto, retornamos null para usar o modo fallback
+        console.log('API Key não encontrada, usando modo fallback');
+        return null;
     }
 
     getDefaultConfig() {
@@ -55,31 +116,19 @@ class AIManager {
      * @returns {Promise<Object>} História gerada
      */
     async generateStory(params = {}) {
-        console.log('🔍 AI Manager - generateStory chamado com params:', params);
-        console.log('🔍 AI Manager - isInitialized:', this.isInitialized);
-        console.log('🔍 AI Manager - apiKey:', this.apiKey ? 'Configurada' : 'Não configurada');
-        
-        if (!this.isInitialized) {
-            console.log('⚠️ AI Manager não inicializado - usando fallback');
-            return this.getFallbackStory(params);
+        if (!this.isInitialized || !this.apiKey) {
+            console.log('Usando modo fallback - gerando história local');
+            return this.generateFallbackStory(params);
         }
 
         try {
-            console.log('🚀 Chamando OpenAI API...');
-            const prompt = this.buildPrompt(params);
-            console.log('📝 Prompt gerado:', prompt);
-            
-            const story = await this.callOpenAI(prompt);
-            console.log('✅ Resposta da OpenAI:', story);
-            
-            const parsedStory = this.parseStoryResponse(story);
-            console.log('📖 História processada:', parsedStory);
-            
-            return parsedStory;
+            console.log('Gerando história com OpenAI...');
+            const story = await this.callOpenAI(params);
+            return story;
         } catch (error) {
-            console.error('❌ Erro ao gerar história com OpenAI:', error);
-            console.error('❌ Detalhes do erro:', error.message);
-            return this.getFallbackStory(params);
+            console.error('Erro na geração com OpenAI:', error);
+            console.log('Fallback para geração local');
+            return this.generateFallbackStory(params);
         }
     }
 
@@ -175,28 +224,13 @@ class AIManager {
     /**
      * Chama OpenAI API
      */
-    async callOpenAI(prompt) {
-        console.log('🔧 callOpenAI - Iniciando chamada...');
-        console.log('🔧 callOpenAI - API Key:', this.apiKey ? 'Presente' : 'Ausente');
-        console.log('🔧 callOpenAI - Model:', this.config.openai.model);
+    async callOpenAI(params) {
+        const { voiceText = '' } = params;
         
-        const requestBody = {
-            model: this.config.openai.model,
-            messages: [
-                {
-                    role: 'system',
-                    content: this.config.openai.systemPrompt
-                },
-                {
-                    role: 'user',
-                    content: prompt
-                }
-            ],
-            max_tokens: this.config.openai.maxTokens,
-            temperature: this.config.openai.temperature
-        };
+        // Extrair palavras-chave do texto de voz
+        const keywords = this.extractKeywords(voiceText);
         
-        console.log('🔧 callOpenAI - Request body:', requestBody);
+        const prompt = this.buildPrompt(keywords);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -204,21 +238,32 @@ class AIManager {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.apiKey}`
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Você é um contador de histórias mágicas para crianças. Crie histórias divertidas, educativas e apropriadas para a idade.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                max_tokens: 800,
+                temperature: 0.8
+            })
         });
 
-        console.log('🔧 callOpenAI - Response status:', response.status);
-        console.log('🔧 callOpenAI - Response ok:', response.ok);
-
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('🔧 callOpenAI - Error response:', errorText);
-            throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+            const errorData = await response.json();
+            throw new Error(`OpenAI API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
         }
 
         const data = await response.json();
-        console.log('🔧 callOpenAI - Response data:', data);
-        return data.choices[0].message.content;
+        const storyText = data.choices[0].message.content;
+        
+        return this.parseStoryResponse(storyText);
     }
 
     /**
@@ -282,25 +327,27 @@ class AIManager {
     /**
      * Constrói o prompt para a tarefa
      */
-    buildPrompt(params) {
-        let prompt = this.config.openai.systemPrompt + '\n\n';
+    buildPrompt(keywords) {
+        const keywordText = keywords.join(', ');
+        return `Crie uma história mágica para crianças com os seguintes elementos: ${keywordText}. 
         
-        if (params.tema) {
-            prompt += `Tema principal: ${params.tema}\n`;
-        }
-        if (params.personagens) {
-            prompt += `Personagens: ${params.personagens}\n`;
-        }
-        if (params.cenario) {
-            prompt += `Cenário: ${params.cenario}\n`;
-        }
-        if (params.voiceText) {
-            prompt += `Inspiração da criança: "${params.voiceText}"\n`;
-        }
-
-        prompt += '\nCrie uma história mágica e envolvente baseada nos elementos acima.';
+        A história deve ter:
+        - Um título criativo
+        - 4-6 parágrafos curtos
+        - Personagens carismáticos
+        - Uma mensagem positiva
+        - Linguagem simples e divertida
         
-        return prompt;
+        Formato de resposta:
+        TÍTULO: [título da história]
+        
+        [parágrafo 1]
+        
+        [parágrafo 2]
+        
+        [parágrafo 3]
+        
+        [parágrafo 4]`;
     }
 
     /**
@@ -375,7 +422,7 @@ class AIManager {
      * Retorna história de fallback
      */
     getFallbackStory(params = {}) {
-        console.log('🎲 Gerando história de fallback com parâmetros:', params);
+        console.log('Gerando história de fallback com parâmetros:', params);
         
         // Se temos parâmetros específicos, criar uma história personalizada
         if (params.voiceText || params.tema || params.personagens || params.cenario) {
@@ -390,7 +437,7 @@ class AIManager {
     }
 
     generateCustomFallbackStory(params) {
-        console.log('🎨 Criando história personalizada de fallback');
+        console.log('Criando história personalizada de fallback');
         
         let title = 'História Mágica';
         let paragraphs = [];
@@ -533,49 +580,87 @@ class AIManager {
     }
 
     parseStoryResponse(response) {
-        try {
-            // Tentar extrair título e parágrafos da resposta
-            const lines = response.split('\n').filter(line => line.trim());
-            
-            let title = 'História Mágica';
-            let paragraphs = [];
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                
-                // Procurar por título (primeira linha ou linha que começa com #)
-                if (i === 0 || line.startsWith('#') || line.startsWith('Título:')) {
-                    title = line.replace(/^[#\s]*Título:\s*/, '').replace(/^[#\s]+/, '');
-                    continue;
-                }
-                
-                // Ignorar linhas vazias ou marcadores
-                if (line === '' || line.startsWith('-') || line.startsWith('*')) {
-                    continue;
-                }
-                
-                // Adicionar como parágrafo se não for muito curto
-                if (line.length > 10) {
-                    paragraphs.push(line);
-                }
+        const lines = response.split('\n').filter(line => line.trim());
+        const title = lines.find(line => line.startsWith('TÍTULO:'))?.replace('TÍTULO:', '').trim() || 'História Mágica';
+        const paragraphs = lines.filter(line => !line.startsWith('TÍTULO:') && line.trim());
+        
+        return {
+            title: title,
+            paragraphs: paragraphs.map(p => ({ text: p.trim() }))
+        };
+    }
+
+    extractKeywords(text) {
+        const lowerText = text.toLowerCase();
+        const keywords = [];
+        
+        // Temas
+        const themes = ['amizade', 'coragem', 'aventura', 'magia', 'família', 'escola', 'animais', 'natureza'];
+        themes.forEach(theme => {
+            if (lowerText.includes(theme)) keywords.push(theme);
+        });
+        
+        // Personagens
+        const characters = ['gato', 'cachorro', 'dragão', 'fada', 'princesa', 'príncipe', 'unicórnio', 'coruja'];
+        characters.forEach(char => {
+            if (lowerText.includes(char)) keywords.push(char);
+        });
+        
+        // Cenários
+        const settings = ['floresta', 'castelo', 'espaço', 'oceano', 'montanha', 'cidade', 'escola'];
+        settings.forEach(setting => {
+            if (lowerText.includes(setting)) keywords.push(setting);
+        });
+        
+        return keywords.length > 0 ? keywords : ['aventura', 'amizade'];
+    }
+
+    generateFallbackStory(params = {}) {
+        const { voiceText = '' } = params;
+        const keywords = this.extractKeywords(voiceText);
+        
+        // Histórias de fallback baseadas em palavras-chave
+        const fallbackStories = {
+            'amizade': {
+                title: 'A Amizade Mágica',
+                paragraphs: [
+                    { text: 'Era uma vez um pequeno gato chamado Miau que vivia sozinho em uma casa na floresta.' },
+                    { text: 'Um dia, ele encontrou uma fada perdida chamada Luma, que tinha perdido suas asas mágicas.' },
+                    { text: 'Miau ajudou Luma a procurar pelas asas, e juntos descobriram que a verdadeira magia estava na amizade.' },
+                    { text: 'Desde então, Miau e Luma se tornaram os melhores amigos e viveram muitas aventuras juntos.' }
+                ]
+            },
+            'coragem': {
+                title: 'O Dragão Corajoso',
+                paragraphs: [
+                    { text: 'Em um castelo nas nuvens, vivia um pequeno dragão chamado Draco que tinha medo de voar.' },
+                    { text: 'Todos os outros dragões riam dele, mas Draco não desistiu de tentar.' },
+                    { text: 'Um dia, uma tempestade ameaçou o castelo, e Draco foi o único que conseguiu voar para salvar todos.' },
+                    { text: 'Agora Draco é conhecido como o dragão mais corajoso de todos!' }
+                ]
+            },
+            'aventura': {
+                title: 'A Aventura no Espaço',
+                paragraphs: [
+                    { text: 'Uma pequena nave espacial chamada Estrelinha estava explorando o universo quando encontrou um planeta mágico.' },
+                    { text: 'No planeta, ela conheceu seres de luz que dançavam entre as estrelas.' },
+                    { text: 'Juntos, eles descobriram que cada planeta tem sua própria música especial.' },
+                    { text: 'Estrelinha voltou para casa com muitas histórias para contar sobre sua grande aventura.' }
+                ]
             }
-            
-            // Se não encontrou parágrafos, dividir por pontos
-            if (paragraphs.length === 0) {
-                paragraphs = response.split('.').filter(p => p.trim().length > 10);
+        };
+        
+        // Escolher história baseada nas palavras-chave
+        let selectedStory = fallbackStories.aventura; // padrão
+        
+        for (const keyword of keywords) {
+            if (fallbackStories[keyword]) {
+                selectedStory = fallbackStories[keyword];
+                break;
             }
-            
-            // Limitar a 4 parágrafos
-            paragraphs = paragraphs.slice(0, 4);
-            
-            return {
-                title: title,
-                paragraphs: paragraphs
-            };
-        } catch (error) {
-            console.error('Erro ao processar resposta da IA:', error);
-            return this.getFallbackStory();
         }
+        
+        return selectedStory;
     }
 
     getStatus() {

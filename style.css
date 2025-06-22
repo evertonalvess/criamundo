@@ -1,3 +1,433 @@
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap');
+
+/* --- Variáveis de Cor e Estilo (Baseado no Conceito Visual) --- */
+:root {
+    --purple-magic: #6C63FF;
+    --pink-enchanted: #FF6FD8;
+    --blue-sky: #89F7FE;
+    --yellow-joy: #FFE867;
+    --green-calm: #A8E6CF;
+    --white-pure: #FFFFFF;
+    --black-soft: #333333;
+    --font-title: 'Fredoka', sans-serif;
+    --font-text: 'Nunito', sans-serif;
+    --border-radius-main: 20px;
+    --shadow-main: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Reset e Estilos Globais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-text);
+    background-color: var(--purple-magic);
+    color: var(--black-soft);
+    overflow: hidden; /* Remove a rolagem */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Estrutura Principal --- */
+.app-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.screen {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none; /* Todas as telas começam escondidas */
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
+}
+
+.screen.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* --- Tela de Boas-Vindas (Nova Tela Inicial) --- */
+#welcome-screen {
+    background-image: url('../img/Menino1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: fadeInZoom 1.5s ease-out forwards;
+}
+
+.welcome-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px;
+    text-align: center;
+}
+
+.welcome-title {
+    font-family: var(--font-title);
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--white-pure);
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: slideInDown 1s ease-out 0.5s forwards;
+}
+
+/* --- Modal iOS de Permissão de Áudio --- */
+.ios-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.ios-modal.show {
+    display: flex;
+}
+
+.ios-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.ios-modal-content {
+    position: relative;
+    background: var(--white-pure);
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    margin: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+.ios-modal-header {
+    text-align: center;
+    padding: 30px 30px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ios-modal-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    animation: iconBounce 0.6s ease-out;
+}
+
+.ios-modal-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--black-soft);
+    margin: 0;
+}
+
+.ios-modal-body {
+    padding: 25px 30px;
+}
+
+.ios-modal-text {
+    font-family: var(--font-text);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--black-soft);
+    margin: 0 0 15px 0;
+    text-align: center;
+}
+
+.ios-modal-subtext {
+    font-family: var(--font-text);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #666;
+    margin: 0;
+    text-align: center;
+}
+
+.ios-modal-actions {
+    display: flex;
+    border-top: 1px solid #f0f0f0;
+}
+
+.ios-modal-btn {
+    flex: 1;
+    padding: 18px 20px;
+    border: none;
+    background: none;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.ios-modal-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(0);
+    transition: transform 0.2s ease-out;
+}
+
+.ios-modal-btn:hover::before {
+    transform: scale(1);
+}
+
+.ios-modal-btn:active::before {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.ios-modal-btn-secondary {
+    color: #666;
+    border-right: 1px solid #f0f0f0;
+}
+
+.ios-modal-btn-secondary:hover {
+    background-color: #f8f8f8;
+}
+
+.ios-modal-btn-primary {
+    color: var(--blue-sky);
+    font-weight: 600;
+}
+
+.ios-modal-btn-primary:hover {
+    background-color: rgba(137, 247, 254, 0.1);
+}
+
+/* Animações da Modal */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconBounce {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* --- Animação de "Escutando" --- */
+.listening-animation {
+    display: none; /* Começa escondida */
+    position: absolute;
+    top: 65%; /* Posicionado mais abaixo para ficar sobre o microfone */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    animation: listeningWave 2s infinite ease-out;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.listening-animation::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    animation: listeningWave 2s infinite ease-out 0.3s;
+}
+
+.listening-animation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    animation: listeningWave 2s infinite ease-out 0.6s;
+}
+
+@keyframes listeningWave {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* --- Botão Principal --- */
+.main-action-button {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    padding: 20px 40px;
+    border: none;
+    border-radius: var(--border-radius-main);
+    cursor: pointer;
+    background-color: var(--yellow-joy);
+    color: var(--black-soft);
+    box-shadow: var(--shadow-main);
+    transform: translateY(200px);
+    transition: all 0.5s ease-out;
+    display: none; /* Começa escondido */
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.main-action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.main-action-button:hover::before {
+    left: 100%;
+}
+
+.main-action-button.visible {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+    animation: buttonSlideUp 0.6s ease-out;
+}
+
+.main-action-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    background-color: #FFE54D;
+}
+
+.main-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.1s ease-out;
+}
+
+@keyframes buttonSlideUp {
+    0% {
+        transform: translateY(200px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* --- Animações --- */
+@keyframes fadeInZoom {
+    from {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* --- Estilos antigos serão removidos ou adaptados abaixo --- */
+/* (Vou manter as outras telas por enquanto, mas escondidas) */
+#story-screen, #loading-screen {
+    /* ... estilos mantidos mas adaptados para o novo design ... */
+}
+
 /* Reset e configurações básicas */
 * {
     margin: 0;
@@ -876,10 +1306,5 @@ body {
 /* Foco visível para acessibilidade */
 .btn:focus {
     outline: 3px solid #fff;
-    outline-offset: 2px;
-}
-
-.form-select:focus, .form-input:focus {
-    outline: 3px solid #4ecdc4;
     outline-offset: 2px;
 } 

@@ -5,79 +5,61 @@
 
 class VoiceManager {
     constructor() {
+        this.log('=== INICIANDO VOICE MANAGER ===');
+        
         this.recognition = null;
-        this.synthesis = null;
-        this.isListening = false;
-        this.isSpeaking = false;
-        this.onResultCallback = null;
-        this.onErrorCallback = null;
-        this.onStartCallback = null;
-        this.onEndCallback = null;
+        this.isRecognitionSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+        this.isSynthesisSupported = ('speechSynthesis' in window);
+        this.isListening = false; // Flag para controlar estado do reconhecimento
+        this.isRecording = false;
+        this.audioChunks = [];
+        this.recordingTimeout = null;
+        
+        this.log(`Reconhecimento suportado: ${this.isRecognitionSupported}`);
+        this.log(`Síntese suportada: ${this.isSynthesisSupported}`);
+        
         this.init();
     }
 
+    log(message, type = 'INFO') {
+        const timestamp = Date.now();
+        const logEntry = `[${timestamp}ms] [VOICE-MANAGER] [${type}] ${message}`;
+        console.log(logEntry);
+        
+        if (type === 'ERROR') {
+            console.error(logEntry);
+        } else if (type === 'WARN') {
+            console.warn(logEntry);
+        }
+    }
+
     init() {
-        this.initSpeechRecognition();
-        this.initSpeechSynthesis();
+        this.log('Inicializando Voice Manager...');
+        
+        if (this.isRecognitionSupported) {
+            this.log('Reconhecimento de voz disponível');
+            this.initSpeechRecognition();
+        } else {
+            this.log('Reconhecimento de voz não suportado', 'ERROR');
+        }
+        
+        if (this.isSynthesisSupported) {
+            this.log('Síntese de voz disponível');
+            this.initSpeechSynthesis();
+        } else {
+            this.log('Síntese de voz não suportada', 'ERROR');
+        }
     }
 
     /**
      * Inicializa o reconhecimento de voz
      */
     initSpeechRecognition() {
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            console.warn('Reconhecimento de voz não suportado neste navegador');
-            return;
-        }
-
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognition();
-
-        // Configurações
+        this.recognition.lang = 'pt-BR';
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
-        this.recognition.lang = 'pt-BR';
-
-        // Event listeners
-        this.recognition.onstart = () => {
-            this.isListening = true;
-            console.log('Reconhecimento de voz iniciado');
-            if (this.onStartCallback) this.onStartCallback();
-        };
-
-        this.recognition.onresult = (event) => {
-            let finalTranscript = '';
-            let interimTranscript = '';
-
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalTranscript += transcript;
-                } else {
-                    interimTranscript += transcript;
-                }
-            }
-
-            if (finalTranscript) {
-                console.log('Texto final:', finalTranscript);
-                if (this.onResultCallback) this.onResultCallback(finalTranscript);
-            }
-
-            // Mostrar texto intermediário
-            this.updateInterimText(interimTranscript);
-        };
-
-        this.recognition.onerror = (event) => {
-            console.error('Erro no reconhecimento de voz:', event.error);
-            this.isListening = false;
-            if (this.onErrorCallback) this.onErrorCallback(event.error);
-        };
-
-        this.recognition.onend = () => {
-            this.isListening = false;
-            console.log('Reconhecimento de voz finalizado');
-            if (this.onEndCallback) this.onEndCallback();
-        };
     }
 
     /**
@@ -88,85 +70,199 @@ class VoiceManager {
             console.warn('Síntese de voz não suportada neste navegador');
             return;
         }
-
-        this.synthesis = window.speechSynthesis;
     }
 
     /**
      * Inicia o reconhecimento de voz
      */
-    startListening() {
-        if (!this.recognition) {
-            console.error('Reconhecimento de voz não disponível');
-            return false;
+    startRecording() {
+        this.log('=== INICIANDO GRAVAÇÃO ===');
+        
+        if (this.isRecording) {
+            this.log('Já está gravando, ignorando nova chamada', 'WARN');
+            return;
         }
 
+        this.isRecording = true;
+        this.audioChunks = [];
+        this.log('Flags de gravação configuradas');
+        
+        // Configurar reconhecimento de voz
+        this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'pt-BR';
+        
+        // Aumentar o tempo de gravação para capturar melhor a fala da criança
+        this.recognition.maxAlternatives = 3;
+        this.log('Reconhecimento configurado: contínuo, resultados intermediários, pt-BR');
+        
+        // Configurar timeout mais longo para crianças
+        this.recordingTimeout = setTimeout(() => {
+            this.log('Timeout de gravação atingido (20s)', 'WARN');
+            this.stopRecording();
+        }, 20000); // 20 segundos para dar tempo da criança falar
+        
+        this.recognition.onstart = () => {
+            this.log('Reconhecimento de voz iniciado');
+            this.onRecordingStart && this.onRecordingStart();
+        };
+        
+        this.recognition.onresult = (event) => {
+            let finalTranscript = '';
+            let interimTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            this.log(`Resultado processado - Final: "${finalTranscript}" | Intermediário: "${interimTranscript}"`);
+            
+            // Atualizar callback com resultados
+            if (this.onResult) {
+                this.onResult(finalTranscript, interimTranscript);
+            }
+            
+            // Se temos resultado final, aguardar um pouco mais antes de parar
+            if (finalTranscript.trim()) {
+                this.log('Resultado final detectado, aguardando 2 segundos antes de parar...');
+                clearTimeout(this.recordingTimeout);
+                this.recordingTimeout = setTimeout(() => {
+                    this.log('Parando gravação após resultado final');
+                    this.stopRecording();
+                }, 2000); // Aguardar 2 segundos após resultado final
+            }
+        };
+        
+        this.recognition.onerror = (event) => {
+            this.log(`Erro no reconhecimento de voz: ${event.error}`, 'ERROR');
+            this.isRecording = false;
+            this.onError && this.onError(event.error);
+        };
+        
+        this.recognition.onend = () => {
+            this.log('Reconhecimento de voz finalizado');
+            this.isRecording = false;
+            clearTimeout(this.recordingTimeout);
+            this.onRecordingEnd && this.onRecordingEnd();
+        };
+        
         try {
+            this.log('Iniciando reconhecimento de voz...');
             this.recognition.start();
-            return true;
         } catch (error) {
-            console.error('Erro ao iniciar reconhecimento:', error);
-            return false;
+            this.log(`Erro ao iniciar reconhecimento: ${error}`, 'ERROR');
+            this.isRecording = false;
+            this.onError && this.onError(error);
         }
     }
 
     /**
      * Para o reconhecimento de voz
      */
-    stopListening() {
-        if (this.recognition && this.isListening) {
-            this.recognition.stop();
+    stopRecording() {
+        this.log('=== PARANDO GRAVAÇÃO ===');
+        
+        if (this.recognition && this.isRecording) {
+            try {
+                this.log('Parando reconhecimento de voz...');
+                this.recognition.stop();
+                this.isRecording = false;
+                this.log('Gravação parada com sucesso');
+            } catch (error) {
+                this.log(`Erro ao parar reconhecimento: ${error}`, 'ERROR');
+            }
+        } else {
+            this.log('Nenhuma gravação ativa para parar', 'WARN');
         }
     }
 
     /**
      * Fala um texto
      */
-    speak(text, options = {}) {
-        if (!this.synthesis) {
-            console.error('Síntese de voz não disponível');
-            return false;
+    speak(text, onEndCallback) {
+        this.log(`=== INICIANDO SÍNTESE DE VOZ ===`);
+        this.log(`Texto a falar: "${text}"`);
+        
+        if (!this.isSynthesisSupported) {
+            this.log('Síntese de voz não suportada', 'ERROR');
+            if (onEndCallback) onEndCallback();
+            return;
         }
 
-        // Parar qualquer fala em andamento
-        this.synthesis.cancel();
+        // Parar fala anterior se estiver ativa
+        if (this.isSpeaking) {
+            this.log('Parando fala anterior...');
+            this.stopSpeaking();
+        }
 
+        this.performSpeak(text, onEndCallback);
+    }
+
+    performSpeak(text, onEndCallback) {
+        this.log('Executando síntese de voz...');
+        
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Configurações padrão
         utterance.lang = 'pt-BR';
-        utterance.rate = options.rate || 0.9;
-        utterance.pitch = options.pitch || 1.0;
-        utterance.volume = options.volume || 1.0;
+        utterance.rate = 0.9;
+        utterance.pitch = 1.1;
 
-        // Selecionar voz em português se disponível
-        const voices = this.synthesis.getVoices();
-        const portugueseVoice = voices.find(voice => 
-            voice.lang.startsWith('pt') || voice.lang.startsWith('pt-BR')
-        );
-        
-        if (portugueseVoice) {
-            utterance.voice = portugueseVoice;
+        const ptVoice = speechSynthesis.getVoices().find(voice => voice.lang === 'pt-BR');
+        if (ptVoice) {
+            utterance.voice = ptVoice;
+            this.log('Voz em português configurada');
+        } else {
+            this.log('Voz em português não encontrada, usando padrão', 'WARN');
         }
-
-        // Event listeners
-        utterance.onstart = () => {
-            this.isSpeaking = true;
-            console.log('Iniciando fala:', text);
-        };
 
         utterance.onend = () => {
-            this.isSpeaking = false;
-            console.log('Fala finalizada');
+            this.log('Síntese de voz finalizada');
+            if (onEndCallback) onEndCallback();
         };
-
+        
         utterance.onerror = (event) => {
-            this.isSpeaking = false;
-            console.error('Erro na síntese de voz:', event.error);
+            this.log(`Erro na síntese de voz: ${event.error}`, 'ERROR');
+            
+            // Se for erro de permissão, tentar reativar
+            if (event.error === 'not-allowed') {
+                this.log('Tentando reativar síntese de voz...', 'WARN');
+                // Tentar falar novamente após um pequeno delay
+                setTimeout(() => {
+                    try {
+                        speechSynthesis.speak(utterance);
+                    } catch (retryError) {
+                        this.log(`Falha na segunda tentativa: ${retryError}`, 'ERROR');
+                        if (onEndCallback) onEndCallback();
+                    }
+                }, 100);
+            } else if (event.error === 'interrupted') {
+                this.log('Síntese interrompida, tentando novamente...', 'WARN');
+                // Tentar falar novamente após um delay maior
+                setTimeout(() => {
+                    try {
+                        speechSynthesis.speak(utterance);
+                    } catch (retryError) {
+                        this.log(`Falha na segunda tentativa: ${retryError}`, 'ERROR');
+                        if (onEndCallback) onEndCallback();
+                    }
+                }, 500);
+            } else {
+                if (onEndCallback) onEndCallback();
+            }
         };
 
-        this.synthesis.speak(utterance);
-        return true;
+        try {
+            this.log('Iniciando síntese de voz...');
+            speechSynthesis.speak(utterance);
+        } catch (error) {
+            this.log(`Erro ao iniciar síntese de voz: ${error}`, 'ERROR');
+            if (onEndCallback) onEndCallback();
+        }
     }
 
     /**
