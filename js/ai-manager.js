@@ -22,12 +22,15 @@ class AIManager {
             // Verificar se a API key está configurada
             this.apiKey = this.config.openai.apiKey;
             console.log('🔑 API Key encontrada:', this.apiKey ? 'Sim' : 'Não');
+            console.log('🔑 API Key valor:', this.apiKey ? this.apiKey.substring(0, 20) + '...' : 'N/A');
+            console.log('🔑 API Key é diferente de YOUR_OPENAI_API_KEY_HERE:', this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE');
             
             if (this.apiKey && this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE') {
                 this.isInitialized = true;
                 console.log('✅ AI Manager inicializado com OpenAI');
             } else {
                 console.log('⚠️ OpenAI não configurado - usando modo fallback');
+                console.log('⚠️ Motivo: API key não configurada ou é o valor padrão');
             }
         } catch (error) {
             console.error('❌ Erro ao carregar configuração da IA:', error);
