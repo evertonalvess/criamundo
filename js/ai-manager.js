@@ -8,20 +8,25 @@ class AIManager {
         this.config = null;
         this.isInitialized = false;
         this.currentStory = null;
+        this.apiKey = null;
         this.init();
     }
 
     async init() {
         try {
-            // Carregar configuração
-            const response = await fetch('config/ai-config.json');
+            const response = await fetch('/config/ai-config.json');
             this.config = await response.json();
-            this.isInitialized = true;
-            console.log('AI Manager inicializado com sucesso');
+            
+            // Verificar se a API key está configurada
+            this.apiKey = this.config.openai.apiKey;
+            if (this.apiKey && this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE') {
+                this.isInitialized = true;
+                console.log('✅ AI Manager inicializado com OpenAI');
+            } else {
+                console.log('⚠️ OpenAI não configurado - usando modo fallback');
+            }
         } catch (error) {
-            console.warn('Erro ao carregar configuração de IA:', error);
-            this.config = this.getDefaultConfig();
-            this.isInitialized = true;
+            console.error('❌ Erro ao carregar configuração da IA:', error);
         }
     }
 
@@ -44,26 +49,17 @@ class AIManager {
      */
     async generateStory(params = {}) {
         if (!this.isInitialized) {
-            await this.init();
-        }
-
-        // Se IA não estiver habilitada, usar história de fallback
-        if (!this.config.ai.enabled) {
-            return this.getFallbackStory();
+            console.log('Usando história de fallback');
+            return this.getFallbackStory(params);
         }
 
         try {
-            const storyParams = {
-                tema: params.tema || this.getRandomTheme(),
-                personagens: params.personagens || this.getRandomCharacters(),
-                ...params
-            };
-
-            const story = await this.callAIProvider('storyGeneration', storyParams);
-            return this.formatStory(story);
+            const prompt = this.buildPrompt(params);
+            const story = await this.callOpenAI(prompt);
+            return this.parseStoryResponse(story);
         } catch (error) {
-            console.error('Erro ao gerar história com IA:', error);
-            return this.getFallbackStory();
+            console.error('❌ Erro ao gerar história com OpenAI:', error);
+            return this.getFallbackStory(params);
         }
     }
 
@@ -159,24 +155,27 @@ class AIManager {
     /**
      * Chama OpenAI API
      */
-    async callOpenAI(task, params) {
-        const provider = this.config.ai.providers.openai;
-        const prompt = this.buildPrompt(task, params);
-
+    async callOpenAI(prompt) {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${provider.apiKey}`
+                'Authorization': `Bearer ${this.apiKey}`
             },
             body: JSON.stringify({
-                model: provider.model,
+                model: this.config.openai.model,
                 messages: [
-                    { role: 'system', content: this.config.ai.prompts[task].system },
-                    { role: 'user', content: prompt }
+                    {
+                        role: 'system',
+                        content: this.config.openai.systemPrompt
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
                 ],
-                max_tokens: provider.maxTokens,
-                temperature: provider.temperature
+                max_tokens: this.config.openai.maxTokens,
+                temperature: this.config.openai.temperature
             })
         });
 
@@ -249,11 +248,25 @@ class AIManager {
     /**
      * Constrói o prompt para a tarefa
      */
-    buildPrompt(task, params) {
-        const promptTemplate = this.config.ai.prompts[task].user;
-        return promptTemplate.replace(/\{(\w+)\}/g, (match, key) => {
-            return params[key] || match;
-        });
+    buildPrompt(params) {
+        let prompt = this.config.openai.systemPrompt + '\n\n';
+        
+        if (params.tema) {
+            prompt += `Tema principal: ${params.tema}\n`;
+        }
+        if (params.personagens) {
+            prompt += `Personagens: ${params.personagens}\n`;
+        }
+        if (params.cenario) {
+            prompt += `Cenário: ${params.cenario}\n`;
+        }
+        if (params.voiceText) {
+            prompt += `Inspiração da criança: "${params.voiceText}"\n`;
+        }
+
+        prompt += '\nCrie uma história mágica e envolvente baseada nos elementos acima.';
+        
+        return prompt;
     }
 
     /**
@@ -327,36 +340,34 @@ class AIManager {
     /**
      * Retorna história de fallback
      */
-    getFallbackStory() {
-        return {
-            id: 'fallback-story',
-            title: 'O Dragão Estelar e a Fada Azul',
-            paragraphs: [
-                {
-                    id: 1,
-                    text: "Era uma vez um dragão brilhante chamado Draco, que morava numa estrela cadente no céu. Seu lar era feito de poeira cósmica e luz colorida, e ele adorava voar entre os planetas brincando de esconde-esconde com os cometas.",
-                    illustration: 'dragao-estrela',
-                    audioDuration: 15
-                },
-                {
-                    id: 2,
-                    text: "Um dia, enquanto voava perto de Saturno, Draco encontrou uma fada azul chamada Luma. Ela carregava uma varinha feita de gelo lunar e tinha asas que brilhavam como diamantes. Luma estava procurando um lugar para plantar estrelas novas.",
-                    illustration: 'fada-saturno',
-                    audioDuration: 18
-                },
-                {
-                    id: 3,
-                    text: "Draco e Luma se tornaram grandes amigos. Juntos, eles criaram constelações no céu noturno desenhando com poeira de estrelas. Cada desenho virava uma história para as crianças da Terra.",
-                    illustration: 'constelacoes',
-                    audioDuration: 16
-                }
-            ],
-            metadata: {
-                createdAt: new Date().toISOString(),
-                generatedBy: 'fallback',
-                wordCount: 89
-            }
-        };
+    getFallbackStory(params = {}) {
+        const fallbackStories = this.config.fallback.stories;
+        const randomStory = fallbackStories[Math.floor(Math.random() * fallbackStories.length)];
+        
+        // Personalizar história de fallback se houver parâmetros
+        if (params.tema || params.personagens || params.cenario) {
+            return this.personalizeFallbackStory(randomStory, params);
+        }
+        
+        return randomStory;
+    }
+
+    personalizeFallbackStory(story, params) {
+        let personalizedStory = { ...story };
+        
+        if (params.tema) {
+            personalizedStory.title = `${personalizedStory.title} - ${params.tema}`;
+        }
+        
+        if (params.personagens) {
+            // Substituir personagens na história
+            personalizedStory.paragraphs = personalizedStory.paragraphs.map(paragraph => {
+                return paragraph.replace(/dragão/g, params.personagens)
+                              .replace(/fada/g, params.personagens);
+            });
+        }
+        
+        return personalizedStory;
     }
 
     /**
@@ -401,7 +412,7 @@ class AIManager {
      * Verifica se a IA está disponível
      */
     isAvailable() {
-        return this.isInitialized && this.config.ai.enabled;
+        return this.isInitialized;
     }
 
     /**
@@ -421,6 +432,60 @@ class AIManager {
     getErrorMessage(type = 'general') {
         const messages = this.config.ui.errorMessages;
         return messages[type] || messages.general || 'Algo deu errado. Tente novamente!';
+    }
+
+    parseStoryResponse(response) {
+        try {
+            // Tentar extrair título e parágrafos da resposta
+            const lines = response.split('\n').filter(line => line.trim());
+            
+            let title = 'História Mágica';
+            let paragraphs = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Procurar por título (primeira linha ou linha que começa com #)
+                if (i === 0 || line.startsWith('#') || line.startsWith('Título:')) {
+                    title = line.replace(/^[#\s]*Título:\s*/, '').replace(/^[#\s]+/, '');
+                    continue;
+                }
+                
+                // Ignorar linhas vazias ou marcadores
+                if (line === '' || line.startsWith('-') || line.startsWith('*')) {
+                    continue;
+                }
+                
+                // Adicionar como parágrafo se não for muito curto
+                if (line.length > 10) {
+                    paragraphs.push(line);
+                }
+            }
+            
+            // Se não encontrou parágrafos, dividir por pontos
+            if (paragraphs.length === 0) {
+                paragraphs = response.split('.').filter(p => p.trim().length > 10);
+            }
+            
+            // Limitar a 4 parágrafos
+            paragraphs = paragraphs.slice(0, 4);
+            
+            return {
+                title: title,
+                paragraphs: paragraphs
+            };
+        } catch (error) {
+            console.error('Erro ao processar resposta da IA:', error);
+            return this.getFallbackStory();
+        }
+    }
+
+    getStatus() {
+        return {
+            initialized: this.isInitialized,
+            hasApiKey: !!this.apiKey && this.apiKey !== 'YOUR_OPENAI_API_KEY_HERE',
+            config: this.config ? 'loaded' : 'not_loaded'
+        };
     }
 }
 

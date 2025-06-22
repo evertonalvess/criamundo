@@ -51,60 +51,62 @@
             </div>
         </div>
 
-        <!-- Tela de Captura de Voz -->
-        <div id="voice-capture-screen" class="screen">
-            <div class="container">
-                <div class="voice-header">
-                    <button id="back-from-voice-btn" class="btn btn-secondary btn-small">
-                        <span>←</span> Voltar
+        <!-- Tela: Conte sua história -->
+        <div id="voiceCaptureScreen" class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="app.showMainMenu()">← Voltar</button>
+                <h1>🎤 Conte sua história</h1>
+            </div>
+            
+            <div class="content">
+                <div class="voice-instructions">
+                    <div class="instruction-text" id="instructionText">
+                        <p>Oi amiguinho! 👋</p>
+                        <p>Vou te ajudar a criar uma história mágica! ✨</p>
+                        <p>Primeiro, me conte sobre:</p>
+                        <ul>
+                            <li>🧸 Que personagem você quer na história?</li>
+                            <li>🌍 Onde a história vai acontecer?</li>
+                            <li>🎭 Que aventura você quer?</li>
+                        </ul>
+                        <p>Pode falar tudo que vier na sua cabeça! 😊</p>
+                    </div>
+                    <button class="pause-btn" id="pauseBtn" onclick="app.toggleInstructions()">
+                        ⏸️ Pausar
                     </button>
-                    <h2>Conte sua História</h2>
                 </div>
                 
-                <div class="voice-content">
-                    <div class="voice-visualization">
-                        <div class="microphone-animation">
-                            <div class="mic-icon">🎤</div>
-                            <div class="voice-waves">
-                                <div class="wave"></div>
-                                <div class="wave"></div>
-                                <div class="wave"></div>
-                            </div>
-                        </div>
+                <div class="voice-capture-area">
+                    <div class="microphone-animation" id="micAnimation">
+                        <div class="mic-icon">🎤</div>
+                        <div class="pulse-ring"></div>
                     </div>
                     
-                    <div class="voice-instructions">
-                        <h3>Como funciona:</h3>
-                        <ul>
-                            <li>🎯 Fale sobre o que você quer na história</li>
-                            <li>👥 Mencione personagens (gato, dragão, princesa...)</li>
-                            <li>🌍 Descreva o lugar (floresta, castelo, espaço...)</li>
-                            <li>💡 Fale sobre o tema (amizade, coragem, aventura...)</li>
-                        </ul>
+                    <div class="voice-status" id="voiceStatus">
+                        <p>Aguardando você falar...</p>
+                    </div>
+                    
+                    <div class="captured-text" id="capturedText">
+                        <!-- Texto capturado aparecerá aqui -->
                     </div>
                     
                     <div class="voice-controls">
-                        <button id="start-voice-btn" class="btn btn-primary btn-large">
-                            <span class="btn-icon">🎤</span>
-                            <span class="btn-text">Começar a Falar</span>
+                        <button class="voice-btn" id="startVoiceBtn" onclick="app.startVoiceCapture()">
+                            🎤 Começar a Gravar
                         </button>
-                        
-                        <button id="stop-voice-btn" class="btn btn-tertiary btn-large" style="display: none;">
-                            <span class="btn-icon">⏹️</span>
-                            <span class="btn-text">Parar</span>
+                        <button class="voice-btn" id="stopVoiceBtn" onclick="app.stopVoiceCapture()" style="display: none;">
+                            ⏹️ Parar Gravação
                         </button>
-                    </div>
-                    
-                    <div id="interim-text" class="interim-text" style="display: none;"></div>
-                    
-                    <div id="voice-result" class="voice-result" style="display: none;">
-                        <h3>O que você disse:</h3>
-                        <p id="voice-transcript"></p>
-                        <button id="generate-from-voice-btn" class="btn btn-primary">
-                            <span class="btn-icon">✨</span>
-                            <span class="btn-text">Criar História</span>
+                        <button class="play-btn" id="playThemeBtn" onclick="app.playCapturedTheme()" style="display: none;">
+                            ▶️ Ouvir o que eu falei
                         </button>
                     </div>
+                </div>
+                
+                <div class="story-creation">
+                    <button class="create-story-btn" id="createStoryBtn" onclick="app.createStoryFromVoice()" style="display: none;">
+                        ✨ Criar Minha História Mágica!
+                    </button>
                 </div>
             </div>
         </div>
