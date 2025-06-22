@@ -94,15 +94,23 @@ class ScreenManager {
     }
 
     setupStoryScreenListeners() {
+        console.log('🔧 Configurando event listeners da tela de história...');
+        
         // Esses listeners serão configurados quando a tela de história for carregada
         const listenBtn = document.getElementById('listenBtn');
+        console.log('🔧 listenBtn encontrado:', !!listenBtn);
+        
         if (listenBtn) {
+            console.log('🔧 Adicionando event listener ao botão de áudio');
             listenBtn.addEventListener('click', () => {
+                console.log('🔧 Clique no botão de áudio detectado');
                 this.toggleAudio();
             });
         }
 
         const saveShareBtn = document.getElementById('save-share-btn');
+        console.log('🔧 saveShareBtn encontrado:', !!saveShareBtn);
+        
         if (saveShareBtn) {
             saveShareBtn.addEventListener('click', () => {
                 this.showShareScreen();
@@ -110,6 +118,8 @@ class ScreenManager {
         }
 
         const newStoryBtn = document.getElementById('new-story-btn');
+        console.log('🔧 newStoryBtn encontrado:', !!newStoryBtn);
+        
         if (newStoryBtn) {
             newStoryBtn.addEventListener('click', () => {
                 this.showMainMenu();
@@ -117,11 +127,15 @@ class ScreenManager {
         }
 
         const backBtn = document.getElementById('back-btn');
+        console.log('🔧 backBtn encontrado:', !!backBtn);
+        
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 this.showMainMenu();
             });
         }
+        
+        console.log('🔧 Event listeners configurados');
     }
 
     showVoiceCaptureScreen() {
@@ -159,20 +173,31 @@ class ScreenManager {
     }
 
     toggleAudio() {
+        console.log('🔊 toggleAudio chamado');
+        console.log('🔊 isPlaying:', this.isPlaying);
+        
         if (this.isPlaying) {
+            console.log('🔊 Parando áudio...');
             this.stopAudio();
         } else {
+            console.log('🔊 Iniciando áudio...');
             this.playStoryAudio();
         }
     }
 
     playStoryAudio() {
+        console.log('🔊 playStoryAudio chamado');
+        console.log('🔊 currentStory:', this.currentStory);
+        
         if (!this.currentStory) {
+            console.log('❌ Nenhuma história carregada');
             this.showMessage('Nenhuma história carregada');
             return;
         }
 
         if ('speechSynthesis' in window) {
+            console.log('✅ speechSynthesis disponível');
+            
             // Parar qualquer áudio anterior
             speechSynthesis.cancel();
             
@@ -181,6 +206,8 @@ class ScreenManager {
                 typeof p === 'string' ? p : p.text
             ).join('. ');
             
+            console.log('🔊 Texto para narrar:', fullText);
+            
             const utterance = new SpeechSynthesisUtterance(fullText);
             utterance.lang = 'pt-BR';
             utterance.rate = 0.8;
@@ -188,41 +215,66 @@ class ScreenManager {
             
             // Usar voz feminina se disponível
             const voices = speechSynthesis.getVoices();
+            console.log('🔊 Vozes disponíveis:', voices.length);
+            
             const femaleVoice = voices.find(voice => 
                 voice.lang.includes('pt') && voice.name.includes('female')
             );
             if (femaleVoice) {
                 utterance.voice = femaleVoice;
+                console.log('🔊 Voz feminina selecionada:', femaleVoice.name);
+            } else {
+                console.log('🔊 Usando voz padrão');
             }
             
             utterance.onstart = () => {
+                console.log('🔊 Áudio iniciado');
                 this.isPlaying = true;
-                document.getElementById('listenBtn').innerHTML = 'Pausar';
+                const listenBtn = document.getElementById('listenBtn');
+                if (listenBtn) {
+                    listenBtn.innerHTML = '<span class="btn-text">Pausar</span>';
+                }
             };
             
             utterance.onend = () => {
+                console.log('🔊 Áudio finalizado');
                 this.isPlaying = false;
-                document.getElementById('listenBtn').innerHTML = 'Ouvir História';
+                const listenBtn = document.getElementById('listenBtn');
+                if (listenBtn) {
+                    listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
+                }
             };
             
-            utterance.onerror = () => {
+            utterance.onerror = (event) => {
+                console.error('❌ Erro no áudio:', event);
                 this.isPlaying = false;
-                document.getElementById('listenBtn').innerHTML = 'Ouvir História';
+                const listenBtn = document.getElementById('listenBtn');
+                if (listenBtn) {
+                    listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
+                }
                 this.showMessage('Erro ao reproduzir áudio');
             };
             
+            console.log('🔊 Iniciando speechSynthesis...');
             speechSynthesis.speak(utterance);
         } else {
+            console.log('❌ speechSynthesis não disponível');
             this.showMessage('Síntese de voz não disponível neste navegador');
         }
     }
 
     stopAudio() {
+        console.log('🔊 stopAudio chamado');
+        
         if ('speechSynthesis' in window) {
             speechSynthesis.cancel();
+            console.log('🔊 Áudio cancelado');
         }
         this.isPlaying = false;
-        document.getElementById('listenBtn').innerHTML = 'Ouvir História';
+        const listenBtn = document.getElementById('listenBtn');
+        if (listenBtn) {
+            listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
+        }
     }
 
     toggleInstructions() {
