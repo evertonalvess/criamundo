@@ -693,6 +693,9 @@ class AIManager {
         // Adiciona a propriedade 'story' para padronizar o objeto
         selectedStory.story = selectedStory.paragraphs.map(p => p.text).join('\\n\\n');
 
+        // Adiciona uma flag para identificar que é uma história de fallback
+        selectedStory.isFallback = true;
+
         return selectedStory;
     }
 

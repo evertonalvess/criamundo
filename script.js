@@ -409,7 +409,7 @@ class CriamundoApp {
         this.voiceManager.startRecording();
     }
 
-    confirmAndProceed() {
+    async confirmAndProceed() {
         this.log('=== CONFIRMAÇÃO E PROSSEGUIMENTO ===');
         this.log(`Tema capturado: "${this.capturedText}"`);
         this.log(`Estado atual - buttonActive: ${this.buttonActive}, isProcessing: ${this.isProcessing}`);
@@ -490,51 +490,37 @@ class CriamundoApp {
     }
 
     async generateStory() {
-        this.log('=== GERANDO HISTÓRIA ===');
-        this.log(`Estado atual - buttonActive: ${this.buttonActive}, isProcessing: ${this.isProcessing}, capturedText: "${this.capturedText}"`);
-        this.log(`Stack trace da chamada:`, new Error().stack);
-        
-        // Parar qualquer gravação em andamento
-        if (this.voiceManager.isRecording) {
-            this.log('Parando gravação em andamento...');
-            this.voiceManager.stopRecording();
-        }
-        
-        // Esconder botão amarelo
-        const createBtn = document.getElementById('create-story-btn');
-        if (createBtn) {
-            this.log('Escondendo botão amarelo...');
-            this.log(`Estado do botão antes: display=${createBtn.style.display}, visible=${createBtn.classList.contains('visible')}`);
-            createBtn.style.display = 'none';
-            createBtn.classList.remove('visible');
-            this.log(`Estado do botão após: display=${createBtn.style.display}, visible=${createBtn.classList.contains('visible')}`);
-        }
-        
-        // Resetar flags
-        this.buttonActive = false;
+        if (this.isProcessing) return;
+        this.log('Iniciando geração de história...');
         this.isProcessing = true;
-        this.log('Flags resetadas: buttonActive=false, isProcessing=true');
         
-        // Gerar história usando o AI Manager
-        this.log('Chamando AI Manager para gerar história...');
-        this.log(`Texto capturado: "${this.capturedText}"`);
+        this.screenManager.showScreen('loading-screen');
         
-        const userPrompt = this.capturedText || 'Crie uma história sobre um dragão amigável e uma fada curiosa.';
-        this.log(`Prompt para IA: "${userPrompt}"`);
-        
-        // Gerar história com o AI Manager
-        const story = await this.aiManager.generateStory({ voiceText: userPrompt });
-        
-        if (story && story.title && story.story) {
-            this.log('História gerada com sucesso!', 'SUCCESS');
-            this.displayStory(story);
-        } else {
-            this.log(`Erro ao gerar história: Story object is missing title or story property`, 'ERROR');
+        try {
+            const userPrompt = this.capturedText || 'Crie uma história sobre um dragão amigável e uma fada curiosa.';
+            this.log(`Prompt para IA: "${userPrompt}"`);
+            
+            const story = await this.aiManager.generateStory({ voiceText: userPrompt });
+
+            // Se for uma história de fallback, adiciona um delay para UX
+            if (story.isFallback) {
+                this.log('Fallback detectado, aguardando 3s para uma melhor UX.');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+            
+            if (story && story.title && story.story) {
+                this.log('História gerada com sucesso!', 'SUCCESS');
+                this.displayStory(story);
+            } else {
+                throw new Error('A resposta da IA não continha uma história válida.');
+            }
+            
+        } catch (error) {
+            this.log(`Erro ao gerar história: ${error.message}`, 'ERROR');
             this.displayError('Oops! Não conseguimos criar sua história. Tente novamente!');
-            // Adicionado para redefinir o fluxo e voltar à tela inicial em caso de erro
-            setTimeout(() => {
-                this.resetToWelcomeScreen();
-            }, 3000); // Aguarda 3 segundos antes de resetar
+            setTimeout(() => this.resetToWelcomeScreen(), 3000);
+        } finally {
+            this.isProcessing = false;
         }
     }
 
