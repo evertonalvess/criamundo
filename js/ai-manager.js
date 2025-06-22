@@ -375,33 +375,97 @@ class AIManager {
      * Retorna história de fallback
      */
     getFallbackStory(params = {}) {
+        console.log('🎲 Gerando história de fallback com parâmetros:', params);
+        
+        // Se temos parâmetros específicos, criar uma história personalizada
+        if (params.voiceText || params.tema || params.personagens || params.cenario) {
+            return this.generateCustomFallbackStory(params);
+        }
+        
+        // Caso contrário, usar histórias pré-definidas
         const fallbackStories = this.config.fallback.stories;
         const randomStory = fallbackStories[Math.floor(Math.random() * fallbackStories.length)];
-        
-        // Personalizar história de fallback se houver parâmetros
-        if (params.tema || params.personagens || params.cenario) {
-            return this.personalizeFallbackStory(randomStory, params);
-        }
         
         return randomStory;
     }
 
-    personalizeFallbackStory(story, params) {
-        let personalizedStory = { ...story };
+    generateCustomFallbackStory(params) {
+        console.log('🎨 Criando história personalizada de fallback');
         
-        if (params.tema) {
-            personalizedStory.title = `${personalizedStory.title} - ${params.tema}`;
+        let title = 'História Mágica';
+        let paragraphs = [];
+        
+        // Extrair elementos dos parâmetros
+        const voiceText = params.voiceText || '';
+        const tema = params.tema || 'aventura';
+        const personagens = params.personagens || 'amigos mágicos';
+        const cenario = params.cenario || 'mundo mágico';
+        
+        // Criar título baseado nos elementos
+        if (voiceText) {
+            const words = voiceText.split(' ').filter(word => word.length > 2);
+            if (words.length > 0) {
+                title = `A Aventura dos ${words[0].charAt(0).toUpperCase() + words[0].slice(1)}`;
+            }
+        } else if (personagens) {
+            title = `O ${personagens.charAt(0).toUpperCase() + personagens.slice(1)} Mágico`;
         }
         
-        if (params.personagens) {
-            // Substituir personagens na história
-            personalizedStory.paragraphs = personalizedStory.paragraphs.map(paragraph => {
-                return paragraph.replace(/dragão/g, params.personagens)
-                              .replace(/fada/g, params.personagens);
-            });
+        // Gerar parágrafos baseados nos elementos
+        const storyTemplates = {
+            'amizade': [
+                `Era uma vez ${personagens} que viviam em um ${cenario} muito especial. Eles eram os melhores amigos do mundo.`,
+                `Um dia, eles descobriram que a verdadeira magia não estava nos poderes, mas na amizade que compartilhavam.`,
+                `Juntos, eles enfrentaram todos os desafios e aprenderam que amigos de verdade sempre se ajudam.`,
+                `Agora, eles vivem felizes para sempre, espalhando magia e amizade por todo o ${cenario}.`
+            ],
+            'coragem': [
+                `Havia ${personagens} que moravam em um ${cenario} misterioso. Eles sempre tiveram medo de aventuras.`,
+                `Mas um dia, eles decidiram ser corajosos e sair em busca de uma grande descoberta.`,
+                `Com muito esforço e determinação, eles superaram todos os seus medos e desafios.`,
+                `Agora eles são conhecidos como os ${personagens} mais corajosos de todo o ${cenario}!`
+            ],
+            'aventura': [
+                `Em um ${cenario} distante, viviam ${personagens} que sonhavam com grandes aventuras.`,
+                `Um dia, eles partiram em uma jornada incrível cheia de surpresas e descobertas mágicas.`,
+                `Pelo caminho, eles encontraram novos amigos e descobriram lugares nunca vistos antes.`,
+                `Quando voltaram para casa, eles tinham histórias incríveis para contar e memórias para sempre!`
+            ],
+            'magia': [
+                `${personagens} viviam em um ${cenario} onde a magia era real e acontecia todos os dias.`,
+                `Eles descobriram que cada um tinha um poder especial e único dentro de si.`,
+                `Juntos, eles aprenderam a usar seus poderes para ajudar outros e fazer o bem.`,
+                `Agora, eles são os guardiões da magia no ${cenario}, protegendo todos os sonhos e esperanças.`
+            ]
+        };
+        
+        // Escolher template baseado no tema ou criar um personalizado
+        let template = storyTemplates[tema] || storyTemplates['aventura'];
+        
+        // Personalizar com o texto de voz se disponível
+        if (voiceText) {
+            const words = voiceText.toLowerCase().split(' ');
+            const keyWords = words.filter(word => word.length > 3);
+            
+            if (keyWords.length > 0) {
+                template = [
+                    `Era uma vez ${personagens} que viviam em um ${cenario} muito especial. Eles adoravam ${keyWords[0]}.`,
+                    `Um dia, eles decidiram fazer uma grande aventura envolvendo ${keyWords.slice(0, 2).join(' e ')}.`,
+                    `Pelo caminho, eles descobriram que a magia está em todas as coisas simples e bonitas.`,
+                    `Agora, eles são os melhores amigos e sempre se divertem juntos no ${cenario}.`
+                ];
+            }
         }
         
-        return personalizedStory;
+        return {
+            title: title,
+            paragraphs: template,
+            metadata: {
+                createdAt: new Date().toISOString(),
+                generatedBy: 'fallback',
+                wordCount: template.join(' ').split(' ').length
+            }
+        };
     }
 
     /**
