@@ -155,6 +155,11 @@ class CriamundoApp {
         };
         document.body.appendChild(playBtn);
         this.log('Botão de debug "Ir para História" adicionado.');
+
+        // Parar narração ao recarregar ou fechar a página
+        window.addEventListener('beforeunload', () => {
+            this.voiceManager.stop();
+        });
     }
 
     setupUserInteraction() {
@@ -588,94 +593,58 @@ class CriamundoApp {
     }
 
     setupStoryScreenButtons(story) {
-        // Garantir que os botões só sejam configurados uma vez
         if (this.storyScreenButtonsConfigured) {
+            this.log('Botões da tela de história já configurados. Pulando.');
             return;
         }
+        this.log('Configurando botões da tela de história (Ouvir de novo, Voltar)...');
+
+        const replayBtn = document.getElementById('listen-story-btn');
+        const backBtn = document.getElementById('back-from-story-btn');
+
+        if (replayBtn) {
+            replayBtn.onclick = () => {
+                this.log('Botão "Ouvir de novo" clicado.');
+                this.playStoryAudio();
+            };
+        } else {
+            this.log('Botão "Ouvir de novo" (listen-story-btn) não encontrado.', 'WARN');
+        }
+
+        if (backBtn) {
+            backBtn.onclick = () => {
+                this.log('Botão "Voltar" clicado. Forçando um recarregamento completo da página.');
+                // O argumento 'true' força o navegador a recarregar a página do servidor,
+                // ignorando o cache. É a forma mais robusta de "resetar" a aplicação.
+                location.reload(true);
+            };
+        } else {
+            this.log('Botão "Voltar" (back-from-story-btn) não encontrado.', 'WARN');
+        }
+
         this.storyScreenButtonsConfigured = true;
-        
-        this.log('=== CONFIGURANDO BOTÕES DA TELA DE HISTÓRIA ===');
-        
-        // Aguardar um pouco para garantir que os elementos estão no DOM
-        setTimeout(() => {
-            // Botão "Ouvir História"
-            const listenBtn = document.getElementById('listen-btn');
-            if (listenBtn) {
-                this.log('Botão "Ouvir História" encontrado, configurando...');
-                listenBtn.onclick = () => {
-                    this.log('Botão "Ouvir História" clicado');
-                    this.playClickSound();
-                    
-                    const storyContent = document.getElementById('story-content');
-                    if (storyContent && this.audioPermissionGranted) {
-                        const textToSpeak = storyContent.textContent;
-                        this.log(`Narrando história: "${textToSpeak.substring(0, 50)}..."`);
-                        this.voiceManager.speak(textToSpeak, () => {
-                            this.log('História narrada novamente');
-                        });
-                    } else {
-                        this.log('ERRO: Conteúdo da história não encontrado ou permissão de áudio perdida', 'ERROR');
-                    }
-                };
-                this.log('✅ Botão "Ouvir História" configurado com sucesso');
-            } else {
-                this.log('❌ Botão "Ouvir História" não encontrado', 'ERROR');
-            }
-            
-            // Botão "Criar Nova História"
-            const newStoryBtn = document.getElementById('new-story-btn');
-            if (newStoryBtn) {
-                this.log('Botão "Criar Nova História" encontrado, configurando...');
-                newStoryBtn.onclick = () => {
-                    this.log('Botão "Criar Nova História" clicado');
-                    this.playClickSound();
-                    this.resetToWelcomeScreen();
-                };
-                this.log('✅ Botão "Criar Nova História" configurado com sucesso');
-            } else {
-                this.log('❌ Botão "Criar Nova História" não encontrado', 'ERROR');
-            }
-            
-            // Verificar se ambos os botões foram configurados
-            if (listenBtn && newStoryBtn) {
-                this.log('✅ Todos os botões da tela de história configurados com sucesso');
-            } else {
-                this.log('⚠️ Alguns botões não foram encontrados', 'WARN');
-            }
-        }, 200);
+        this.log('Botões da tela de história configurados.');
     }
 
     resetToWelcomeScreen() {
-        this.log('=== RESETANDO PARA TELA INICIAL ===');
+        this.log('=== RESETANDO PARA TELA DE BOAS-VINDAS ===');
+        // 1. Parar qualquer áudio e resetar todas as flags de estado.
+        this.voiceManager.stop();
+        this.resetFlow();
+
+        // 2. Mudar para a tela de boas-vindas.
+        this.screenManager.showScreen('welcome-screen');
         
-        // Resetar todas as flags
-        this.isProcessing = false;
-        this.buttonActive = false;
-        this.capturedText = '';
-        this.userHasInteracted = true; // Manter como true para não pedir interação novamente
-        
-        // Esconder botão amarelo se estiver visível
-        const createBtn = document.getElementById('create-story-btn');
-        if (createBtn) {
-            createBtn.style.display = 'none';
-            createBtn.classList.remove('visible');
-        }
-        
-        // Esconder animação de gravação
-        this.hideRecordingAnimation();
-        
-        // Voltar para tela inicial
-        this.showScreen('welcome-screen');
-        
-        // Iniciar novo fluxo após um pequeno delay
+        // 3. Iniciar o novo ciclo de interação APÓS uma pequena pausa.
+        // Isso evita conflitos com a animação de transição de tela.
         setTimeout(() => {
-            this.log('Iniciando novo fluxo...');
+            this.log('Reiniciando o ciclo de interação após o reset.');
             this.startInteractionLoop();
-        }, 1000);
+        }, 500);
     }
 
     displayError(message) {
-        this.log(`=== ERRO: ${message} ===`, 'ERROR');
+        this.log(`ERRO: ${message}`, 'ERROR');
         this.showScreen('welcome-screen');
         
         if (this.audioPermissionGranted) {
@@ -698,13 +667,10 @@ class CriamundoApp {
 
     resetFlow() {
         this.log('=== RESETANDO FLUXO ===');
-        this.log(`Estado antes do reset - buttonActive: ${this.buttonActive}, isProcessing: ${this.isProcessing}, capturedText: "${this.capturedText}"`);
-        this.log(`Stack trace do reset:`, new Error().stack);
-        
         this.isProcessing = false;
         this.buttonActive = false;
         this.capturedText = '';
-        this.log('Flags resetadas: isProcessing=false, buttonActive=false, capturedText=""');
+        this.storyScreenButtonsConfigured = false; // Garante que os botões da história possam ser reconfigurados
         
         // Esconder botão amarelo
         const createBtn = document.getElementById('create-story-btn');
