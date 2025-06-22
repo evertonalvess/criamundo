@@ -129,6 +129,32 @@ class CriamundoApp {
         };
         document.body.appendChild(forceBtn);
         this.log('Botão de forçar visibilidade adicionado');
+
+        // Adicionar botão para ir direto para a história (debug)
+        const playBtn = document.createElement('button');
+        playBtn.textContent = '▶️ Ir para História';
+        playBtn.style.cssText = `
+            position: fixed;
+            top: 130px;
+            right: 10px;
+            z-index: 9999;
+            background: #20c997;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        `;
+        playBtn.onclick = async () => {
+            this.log('Botão de debug "Ir para História" clicado.');
+            // Usar o AIManager para gerar uma história de fallback
+            const story = await this.aiManager.generateFallbackStory();
+            // Exibir a história diretamente
+            this.displayStory(story);
+        };
+        document.body.appendChild(playBtn);
+        this.log('Botão de debug "Ir para História" adicionado.');
     }
 
     setupUserInteraction() {

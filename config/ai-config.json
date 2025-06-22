@@ -1,6 +1,6 @@
 {
     "openai": {
-        "apiKey": "YOUR_OPENAI_API_KEY_HERE",
+        "apiKey": "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",
         "model": "gpt-3.5-turbo",
         "maxTokens": 800,
         "temperature": 0.8,
