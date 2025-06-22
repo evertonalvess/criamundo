@@ -1,0 +1,131 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies (if any)
+      run: |
+        # Se houver package.json, instalar dependências
+        if [ -f package.json ]; then
+          npm ci
+        fi
+        
+    - name: Build project (if needed)
+      run: |
+        # Se houver script de build, executar
+        if [ -f package.json ] && npm run | grep -q "build"; then
+          npm run build
+        fi
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .
+        publish_branch: gh-pages
+        force_orphan: true
+        
+    - name: Configure GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # Configurar GitHub Pages para usar a branch gh-pages
+        gh api repos/${{ github.repository }}/pages \
+          --method PUT \
+          --field source=gh-pages \
+          --field build_type=workflow
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies (if any)
+      run: |
+        if [ -f package.json ]; then
+          npm ci
+        fi
+        
+    - name: Run tests (if any)
+      run: |
+        if [ -f package.json ] && npm run | grep -q "test"; then
+          npm test
+        else
+          echo "No tests configured"
+        fi
+        
+    - name: Validate HTML
+      run: |
+        # Verificar se o HTML é válido
+        if command -v html5validator &> /dev/null; then
+          html5validator --root . --format text --ignore "*.min.js"
+        else
+          echo "HTML5 validator not available, skipping HTML validation"
+        fi
+        
+    - name: Check file structure
+      run: |
+        # Verificar se os arquivos principais existem
+        required_files=("index.html" "style.css" "script.js" "README.md")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Required file $file is missing"
+            exit 1
+          else
+            echo "✅ $file exists"
+          fi
+        done
+        
+        # Verificar se a estrutura de diretórios está correta
+        required_dirs=("assets" "stories" ".github/workflows")
+        for dir in "${required_dirs[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "❌ Required directory $dir is missing"
+            exit 1
+          else
+            echo "✅ $dir exists"
+          fi
+        done
+        
+        echo "✅ All required files and directories are present"
+        
+    - name: Check file sizes
+      run: |
+        # Verificar se os arquivos não são muito grandes
+        max_size=1024  # 1MB em KB
+        
+        for file in *.html *.css *.js; do
+          if [ -f "$file" ]; then
+            size=$(du -k "$file" | cut -f1)
+            if [ "$size" -gt "$max_size" ]; then
+              echo "⚠️  Warning: $file is larger than 1MB ($size KB)"
+            else
+              echo "✅ $file size is OK ($size KB)"
+            fi
+          fi
+        done 

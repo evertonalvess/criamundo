@@ -1,0 +1,97 @@
+{
+  "id": "dragao-estelar-fada-azul",
+  "title": "O Dragão Estelar e a Fada Azul",
+  "author": "Criamundo",
+  "ageGroup": "4-9",
+  "duration": "3-5 minutos",
+  "theme": "amizade, espaço, magia",
+  "characters": [
+    {
+      "name": "Draco",
+      "type": "dragão",
+      "description": "Dragão brilhante que mora numa estrela cadente",
+      "emoji": "🐉"
+    },
+    {
+      "name": "Luma",
+      "type": "fada",
+      "description": "Fada azul com varinha de gelo lunar",
+      "emoji": "🧚‍♀️"
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": 1,
+      "text": "Era uma vez um dragão brilhante chamado Draco, que morava numa estrela cadente no céu. Seu lar era feito de poeira cósmica e luz colorida, e ele adorava voar entre os planetas brincando de esconde-esconde com os cometas.",
+      "illustration": "dragao-estrela",
+      "audioDuration": 15
+    },
+    {
+      "id": 2,
+      "text": "Um dia, enquanto voava perto de Saturno, Draco encontrou uma fada azul chamada Luma. Ela carregava uma varinha feita de gelo lunar e tinha asas que brilhavam como diamantes. Luma estava procurando um lugar para plantar estrelas novas.",
+      "illustration": "fada-saturno",
+      "audioDuration": 18
+    },
+    {
+      "id": 3,
+      "text": "Draco e Luma se tornaram grandes amigos. Juntos, eles criaram constelações no céu noturno desenhando com poeira de estrelas. Cada desenho virava uma história para as crianças da Terra.",
+      "illustration": "constelacoes",
+      "audioDuration": 16
+    },
+    {
+      "id": 4,
+      "text": "Mas um dia, uma nuvem escura cobriu parte do espaço, escondendo a luz das constelações. As crianças ficaram tristes sem ver as formas no céu.",
+      "illustration": "nuvem-escura",
+      "audioDuration": 14
+    },
+    {
+      "id": 5,
+      "text": "Então, Draco soprou seu fogo estelar bem alto, e Luma girou sua varinha. A luz voltou, mais forte do que antes, e o céu ficou cheio de novas formas brilhantes!",
+      "illustration": "luz-retorna",
+      "audioDuration": 17
+    },
+    {
+      "id": 6,
+      "text": "Desde então, toda noite, Draco e Luma criam novas histórias no céu, para quem quiser sonhar olhando para as estrelas.",
+      "illustration": "final-feliz",
+      "audioDuration": 12
+    }
+  ],
+  "metadata": {
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "version": "1.0",
+    "language": "pt-BR",
+    "difficulty": "easy",
+    "wordCount": 156,
+    "readingTime": "2-3 minutos"
+  },
+  "educational": {
+    "vocabulary": [
+      "estrela cadente",
+      "poeira cósmica",
+      "constelações",
+      "gelo lunar",
+      "fogo estelar"
+    ],
+    "concepts": [
+      "amizade",
+      "cooperação",
+      "criatividade",
+      "perseverança",
+      "magia"
+    ],
+    "questions": [
+      "O que você faria se encontrasse um dragão no céu?",
+      "Como você ajudaria um amigo em dificuldade?",
+      "Que tipo de história você gostaria de criar?"
+    ]
+  },
+  "accessibility": {
+    "highContrast": true,
+    "largeText": true,
+    "audioDescription": true,
+    "keyboardNavigation": true,
+    "screenReader": true
+  }
+} 

@@ -1,0 +1,125 @@
+{
+  "ai": {
+    "enabled": false,
+    "providers": {
+      "openai": {
+        "enabled": false,
+        "apiKey": "",
+        "model": "gpt-4",
+        "maxTokens": 1000,
+        "temperature": 0.8
+      },
+      "anthropic": {
+        "enabled": false,
+        "apiKey": "",
+        "model": "claude-3-sonnet",
+        "maxTokens": 1000
+      },
+      "local": {
+        "enabled": false,
+        "endpoint": "http://localhost:3000/generate",
+        "model": "llama-3.1-8b"
+      }
+    },
+    "prompts": {
+      "storyGeneration": {
+        "system": "Você é um contador de histórias mágicas para crianças de 4 a 9 anos. Crie histórias educativas, divertidas e apropriadas para a idade, com personagens cativantes e mensagens positivas.",
+        "user": "Crie uma história curta e mágica sobre {tema} com personagens {personagens}. A história deve ter entre 3-5 parágrafos, ser educativa e divertida para crianças de 4-9 anos.",
+        "examples": [
+          {
+            "tema": "amizade e cooperação",
+            "personagens": "um gato e um cachorro",
+            "resultado": "O Gato e o Cachorro Mágicos"
+          },
+          {
+            "tema": "coragem e superação",
+            "personagens": "uma pequena coruja",
+            "resultado": "A Coruja Corajosa"
+          }
+        ]
+      },
+      "imageGeneration": {
+        "system": "Você é um artista especializado em ilustrações infantis. Crie imagens coloridas, seguras e apropriadas para crianças.",
+        "user": "Crie uma ilustração para a história '{titulo}' mostrando {cena}. Estilo: infantil, colorido, seguro para crianças."
+      },
+      "audioGeneration": {
+        "system": "Você é um narrador de histórias infantis. Use uma voz clara, expressiva e amigável.",
+        "user": "Narre a história '{titulo}' com entonação apropriada para crianças."
+      }
+    },
+    "storyStructure": {
+      "maxParagraphs": 6,
+      "maxWordsPerParagraph": 50,
+      "requiredElements": [
+        "personagem principal",
+        "desafio ou problema",
+        "resolução",
+        "mensagem positiva"
+      ],
+      "themes": [
+        "amizade",
+        "coragem",
+        "cooperação",
+        "criatividade",
+        "perseverança",
+        "bondade",
+        "responsabilidade",
+        "curiosidade"
+      ],
+      "characterTypes": [
+        "animais",
+        "criaturas mágicas",
+        "crianças",
+        "super-heróis",
+        "princesas e príncipes",
+        "profissionais"
+      ]
+    }
+  },
+  "features": {
+    "voiceRecognition": {
+      "enabled": false,
+      "provider": "web-speech-api",
+      "language": "pt-BR",
+      "continuous": true,
+      "interimResults": true
+    },
+    "textToSpeech": {
+      "enabled": false,
+      "provider": "web-speech-api",
+      "voice": "pt-BR",
+      "rate": 0.9,
+      "pitch": 1.0
+    },
+    "imageGeneration": {
+      "enabled": false,
+      "provider": "dalle",
+      "style": "children-book",
+      "size": "1024x1024"
+    }
+  },
+  "ui": {
+    "loadingMessages": [
+      "Pensando em uma história mágica...",
+      "Criando personagens especiais...",
+      "Desenhando cenários incríveis...",
+      "Finalizando sua história...",
+      "Preparando para você ouvir..."
+    ],
+    "errorMessages": {
+      "network": "Ops! Parece que perdemos a conexão. Tente novamente!",
+      "ai": "A IA está descansando. Vamos usar uma história especial!",
+      "voice": "Não consegui ouvir bem. Pode falar mais alto?",
+      "general": "Algo deu errado. Vamos tentar de novo?"
+    }
+  },
+  "fallback": {
+    "stories": [
+      "dragao-estelar-fada-azul",
+      "gato-cachorro-magicos",
+      "coruja-corajosa",
+      "pequeno-dragao-verde"
+    ],
+    "enableOfflineMode": true
+  }
+} 
