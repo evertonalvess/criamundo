@@ -516,6 +516,22 @@ class CriamundoApp {
                 if (storyTitleEl && storyTextEl) {
                     storyTitleEl.textContent = story.title;
                     storyTextEl.innerHTML = story.story.replace(/\\n/g, '<br><br>');
+
+                    // Adicionar a imagem se ela existir
+                    if (story.image) {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = story.image;
+                        imgEl.alt = story.title;
+                        imgEl.style.cssText = `
+                            width: 100%;
+                            max-width: 300px;
+                            border-radius: 10px;
+                            margin-bottom: 20px;
+                        `;
+                        // Inserir a imagem antes do texto
+                        storyTextEl.parentNode.insertBefore(imgEl, storyTextEl);
+                    }
+
                 } else {
                     throw new Error('Elementos #story-title ou #story-text não encontrados no DOM.');
                 }
@@ -528,6 +544,17 @@ class CriamundoApp {
 
             // 3. Configurar os botões
             this.setupStoryScreenButtons(story);
+
+            // Limpar imagens antigas ao exibir uma nova história
+            const storyContainer = document.querySelector('.story-container-v2');
+            if (storyContainer) {
+                const oldImages = storyContainer.querySelectorAll('img');
+                oldImages.forEach(img => {
+                    // Não remover a imagem que acabamos de adicionar
+                    if (img.src.endsWith(story.image)) return;
+                    img.remove();
+                });
+            }
 
         } else {
             this.log('Objeto de história inválido recebido.', 'ERROR');

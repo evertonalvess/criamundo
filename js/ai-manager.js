@@ -532,18 +532,20 @@ class AIManager {
      * Retorna imagem de fallback
      */
     getFallbackImage(storyTitle) {
-        // Retorna uma ilustração baseada em emojis
-        return `data:image/svg+xml,${encodeURIComponent(`
-            <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="300" fill="#f0f8ff"/>
-                <text x="200" y="150" font-family="Arial" font-size="48" text-anchor="middle" fill="#333">
-                    🎨
-                </text>
-                <text x="200" y="200" font-family="Arial" font-size="16" text-anchor="middle" fill="#666">
-                    ${storyTitle}
-                </text>
-            </svg>
-        `)}`;
+        // Lista de imagens disponíveis na pasta /img/
+        const availableImages = [
+            'img/Menino1.png',
+            'img/Menino2.png',
+            'img/Menina2.png'
+        ];
+        
+        // Escolhe uma imagem aleatoriamente
+        const randomIndex = Math.floor(Math.random() * availableImages.length);
+        const selectedImage = availableImages[randomIndex];
+        
+        this.log(`Imagem de fallback selecionada: ${selectedImage}`);
+        
+        return selectedImage;
     }
 
     /**
@@ -692,6 +694,9 @@ class AIManager {
         
         // Adiciona a propriedade 'story' para padronizar o objeto
         selectedStory.story = selectedStory.paragraphs.map(p => p.text).join('\\n\\n');
+
+        // Adiciona a imagem de fallback ao objeto da história
+        selectedStory.image = this.getFallbackImage(selectedStory.title);
 
         // Adiciona uma flag para identificar que é uma história de fallback
         selectedStory.isFallback = true;
