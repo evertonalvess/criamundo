@@ -68,52 +68,60 @@ class ScreenManager {
 
     setupEventListeners() {
         // Event listeners para botões do menu principal
-        document.getElementById('voiceStoryBtn').addEventListener('click', () => {
+        document.getElementById('create-story-btn').addEventListener('click', () => {
             this.showVoiceCaptureScreen();
         });
 
-        document.getElementById('aiStoryBtn').addEventListener('click', () => {
+        document.getElementById('create-story-ai-btn').addEventListener('click', () => {
             this.showAICreationScreen();
         });
 
-        document.getElementById('exampleStoryBtn').addEventListener('click', () => {
-            this.showMainMenu();
-        });
-
-        // Event listeners para botões da tela de história
-        document.getElementById('listenBtn').addEventListener('click', () => {
-            this.toggleAudio();
-        });
-
-        document.getElementById('shareBtn').addEventListener('click', () => {
-            this.showMainMenu();
-        });
-
-        document.getElementById('printBtn').addEventListener('click', () => {
-            this.printStory();
-        });
-
-        document.getElementById('newStoryBtn').addEventListener('click', () => {
-            this.showMainMenu();
-        });
-
-        // Event listeners para botões da tela de compartilhamento
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            this.saveStory();
-        });
-
-        document.getElementById('backToMenuBtn').addEventListener('click', () => {
-            this.showMainMenu();
-        });
-
         // Event listeners para botões da tela de IA
-        document.getElementById('generateStoryBtn').addEventListener('click', () => {
+        document.getElementById('generate-ai-story-btn').addEventListener('click', () => {
             this.generateStory();
         });
 
-        document.getElementById('backFromAIBtn').addEventListener('click', () => {
+        document.getElementById('random-story-btn').addEventListener('click', () => {
+            this.generateRandomStory();
+        });
+
+        document.getElementById('back-from-ai-btn').addEventListener('click', () => {
             this.showMainMenu();
         });
+
+        // Event listeners para botões da tela de história (quando existirem)
+        this.setupStoryScreenListeners();
+    }
+
+    setupStoryScreenListeners() {
+        // Esses listeners serão configurados quando a tela de história for carregada
+        const listenBtn = document.getElementById('listenBtn');
+        if (listenBtn) {
+            listenBtn.addEventListener('click', () => {
+                this.toggleAudio();
+            });
+        }
+
+        const saveShareBtn = document.getElementById('save-share-btn');
+        if (saveShareBtn) {
+            saveShareBtn.addEventListener('click', () => {
+                this.showShareScreen();
+            });
+        }
+
+        const newStoryBtn = document.getElementById('new-story-btn');
+        if (newStoryBtn) {
+            newStoryBtn.addEventListener('click', () => {
+                this.showMainMenu();
+            });
+        }
+
+        const backBtn = document.getElementById('back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.showMainMenu();
+            });
+        }
     }
 
     showVoiceCaptureScreen() {
@@ -736,12 +744,40 @@ class ScreenManager {
         this.currentScreen = 'share';
         this.updateScreen();
         
-        // Adicionar funcionalidade ao botão "Criar Nova História"
+        // Adicionar funcionalidade aos botões da tela de compartilhamento
         setTimeout(() => {
-            const newStoryBtn = document.getElementById('newStoryBtn');
+            const saveBtn = document.querySelector('#save-share-screen .btn-primary');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    this.saveStory();
+                });
+            }
+
+            const shareBtn = document.querySelector('#save-share-screen .btn-secondary');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    this.shareStory();
+                });
+            }
+
+            const printBtn = document.querySelector('#save-share-screen .btn-tertiary');
+            if (printBtn) {
+                printBtn.addEventListener('click', () => {
+                    this.printStory();
+                });
+            }
+
+            const newStoryBtn = document.querySelector('#save-share-screen #new-story-btn');
             if (newStoryBtn) {
                 newStoryBtn.addEventListener('click', () => {
                     this.showMainMenu();
+                });
+            }
+
+            const backToStoryBtn = document.getElementById('back-to-story-btn');
+            if (backToStoryBtn) {
+                backToStoryBtn.addEventListener('click', () => {
+                    this.showStoryScreen();
                 });
             }
         }, 100);
@@ -761,13 +797,13 @@ class ScreenManager {
 
     getScreenId() {
         const screenMap = {
-            'main': 'mainMenuScreen',
-            'story': 'storyScreen',
-            'share': 'shareScreen',
-            'ai': 'aiCreationScreen',
+            'main': 'home-screen',
+            'story': 'story-screen',
+            'share': 'share-screen',
+            'ai': 'ai-config-screen',
             'voiceCapture': 'voiceCaptureScreen'
         };
-        return screenMap[this.currentScreen] || 'mainMenuScreen';
+        return screenMap[this.currentScreen] || 'home-screen';
     }
 
     showMainMenu() {
@@ -817,6 +853,24 @@ class ScreenManager {
                 this.showStoryScreen();
             });
     }
+
+    generateRandomStory() {
+        this.showMessage('Criando história surpresa... 🎲');
+        
+        // Gerar história aleatória com IA
+        this.aiManager.generateStory()
+            .then(story => {
+                this.currentStory = story;
+                this.showStoryScreen();
+                this.showMessage('História surpresa criada! 🎉');
+            })
+            .catch(error => {
+                console.error('Erro ao gerar história aleatória:', error);
+                this.showMessage('Usando história de exemplo... 📖');
+                this.currentStory = this.getFallbackStory();
+                this.showStoryScreen();
+            });
+    }
 }
 
 // Animações CSS adicionais
@@ -839,7 +893,7 @@ document.head.appendChild(styleSheet);
 
 // Inicializar aplicação quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
-    new ScreenManager();
+    window.app = new ScreenManager();
     
     // Adicionar efeitos de som (opcional)
     addSoundEffects();
