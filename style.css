@@ -35,7 +35,7 @@ body {
 /* --- Estrutura Principal --- */
 .app-container {
     width: 100vw;
-    height: 100vh;
+    height: 100dvh; /* Usa a altura dinâmica do viewport, corrigindo o problema no Safari iOS */
     position: relative;
     overflow: hidden;
 }

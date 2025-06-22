@@ -4,11 +4,14 @@ class CriamundoApp {
         this.aiManager = new AIManager();
         this.screenManager = new ScreenManager();
         this.audioPermissionGranted = false;
+        this.audioUnlocked = false;
         this.userHasInteracted = false;
         this.isProcessing = false;
         this.buttonActive = false;
         this.capturedText = '';
         this.currentTimeout = null;
+        this.audioUnlocked = false;
+
         
         // Sistema de logs detalhado
         this.logEvents = [];
@@ -61,90 +64,29 @@ class CriamundoApp {
 
     // Método para debug - adicionar botão temporário
     addDebugButton() {
-        const debugBtn = document.createElement('button');
-        debugBtn.textContent = '🔍 Debug Logs';
-        debugBtn.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 9999;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        `;
-        debugBtn.onclick = () => {
-            this.exportLogs();
-        };
-        document.body.appendChild(debugBtn);
-        this.log('Botão de debug adicionado');
-        
-        // Adicionar botão de verificação de estado
-        const stateBtn = document.createElement('button');
-        stateBtn.textContent = '📊 Estado';
-        stateBtn.style.cssText = `
-            position: fixed;
-            top: 50px;
-            right: 10px;
-            z-index: 9999;
-            background: #4ecdc4;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        `;
-        stateBtn.onclick = () => {
-            this.checkActiveTimeouts();
-            const btn = document.getElementById('create-story-btn');
-            if (btn) {
-                this.log(`Estado do botão: display=${btn.style.display}, visible=${btn.classList.contains('visible')}`);
-            }
-        };
-        document.body.appendChild(stateBtn);
-        this.log('Botão de estado adicionado');
-        
-        // Adicionar botão para forçar visibilidade
-        const forceBtn = document.createElement('button');
-        forceBtn.textContent = '🔧 Forçar';
-        forceBtn.style.cssText = `
-            position: fixed;
-            top: 90px;
-            right: 10px;
-            z-index: 9999;
-            background: #ffa726;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        `;
-        forceBtn.onclick = () => {
-            this.forceButtonVisible();
-        };
-        document.body.appendChild(forceBtn);
-        this.log('Botão de forçar visibilidade adicionado');
-
-        // Adicionar botão para ir direto para a história (debug)
+        // Manter apenas o botão de atalho para a história
         const playBtn = document.createElement('button');
-        playBtn.textContent = '▶️ Ir para História';
+        playBtn.textContent = '▶️'; // Apenas o ícone de play
+        playBtn.setAttribute('aria-label', 'Ir para História'); // Para acessibilidade
         playBtn.style.cssText = `
             position: fixed;
-            top: 130px;
+            top: 10px;
             right: 10px;
             z-index: 9999;
             background: #20c997;
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 10px 15px; /* Ajuste no padding para um visual mais quadrado */
+            border-radius: 50%; /* Botão redondo */
             cursor: pointer;
-            font-size: 12px;
+            font-size: 18px; /* Tamanho do ícone */
+            line-height: 1; /* Alinhamento do ícone */
+            width: 48px; /* Largura fixa */
+            height: 48px; /* Altura fixa */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         `;
         playBtn.onclick = async () => {
             this.log('Botão de debug "Ir para História" clicado.');
@@ -167,6 +109,7 @@ class CriamundoApp {
         
         const handleInteraction = () => {
             if (!this.userHasInteracted) {
+                this.unlockAudio(); // DESBLOQUEIA O ÁUDIO NA PRIMEIRA INTERAÇÃO
                 this.log('Primeira interação do usuário detectada!');
                 this.userHasInteracted = true;
                 
@@ -288,6 +231,7 @@ class CriamundoApp {
             if (okBtn) {
                 okBtn.onclick = () => {
                     this.log('Botão OK da modal clicado');
+                    this.unlockAudio();
                     this.playClickSound();
                     this.grantAudioPermission();
                 };
@@ -857,6 +801,19 @@ class CriamundoApp {
             clearTimeout(this.currentTimeout);
             this.currentTimeout = null;
         }
+    }
+
+    unlockAudio() {
+        if (this.audioUnlocked) return;
+        this.log('Tentando desbloquear o áudio para o navegador...');
+        const silentSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=");
+        silentSound.volume = 0;
+        silentSound.play().then(() => {
+            this.audioUnlocked = true;
+            this.log('Contexto de áudio desbloqueado com sucesso.', 'SUCCESS');
+        }).catch(e => {
+            this.log(`Desbloqueio de áudio falhou: ${e.message}`, 'WARN');
+        });
     }
 }
 
