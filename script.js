@@ -98,7 +98,7 @@ class ScreenManager {
         
         // Função para configurar os listeners
         const setupListeners = () => {
-            const listenBtn = document.getElementById('listenBtn');
+            const listenBtn = document.getElementById('listen-btn');
             console.log('🔧 listenBtn encontrado:', !!listenBtn);
             
             if (listenBtn) {
@@ -239,7 +239,7 @@ class ScreenManager {
             utterance.onstart = () => {
                 console.log('🔊 Áudio iniciado');
                 this.isPlaying = true;
-                const listenBtn = document.getElementById('listenBtn');
+                const listenBtn = document.getElementById('listen-btn');
                 if (listenBtn) {
                     listenBtn.innerHTML = '<span class="btn-text">Pausar</span>';
                 }
@@ -248,7 +248,7 @@ class ScreenManager {
             utterance.onend = () => {
                 console.log('🔊 Áudio finalizado');
                 this.isPlaying = false;
-                const listenBtn = document.getElementById('listenBtn');
+                const listenBtn = document.getElementById('listen-btn');
                 if (listenBtn) {
                     listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
                 }
@@ -257,7 +257,7 @@ class ScreenManager {
             utterance.onerror = (event) => {
                 console.error('❌ Erro no áudio:', event);
                 this.isPlaying = false;
-                const listenBtn = document.getElementById('listenBtn');
+                const listenBtn = document.getElementById('listen-btn');
                 if (listenBtn) {
                     listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
                 }
@@ -280,7 +280,7 @@ class ScreenManager {
             console.log('🔊 Áudio cancelado');
         }
         this.isPlaying = false;
-        const listenBtn = document.getElementById('listenBtn');
+        const listenBtn = document.getElementById('listen-btn');
         if (listenBtn) {
             listenBtn.innerHTML = '<span class="btn-text">Ouvir História</span>';
         }
