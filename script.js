@@ -96,46 +96,55 @@ class ScreenManager {
     setupStoryScreenListeners() {
         console.log('🔧 Configurando event listeners da tela de história...');
         
-        // Esses listeners serão configurados quando a tela de história for carregada
-        const listenBtn = document.getElementById('listenBtn');
-        console.log('🔧 listenBtn encontrado:', !!listenBtn);
-        
-        if (listenBtn) {
-            console.log('🔧 Adicionando event listener ao botão de áudio');
-            listenBtn.addEventListener('click', () => {
-                console.log('🔧 Clique no botão de áudio detectado');
-                this.toggleAudio();
-            });
-        }
+        // Função para configurar os listeners
+        const setupListeners = () => {
+            const listenBtn = document.getElementById('listenBtn');
+            console.log('🔧 listenBtn encontrado:', !!listenBtn);
+            
+            if (listenBtn) {
+                console.log('🔧 Adicionando event listener ao botão de áudio');
+                listenBtn.addEventListener('click', () => {
+                    console.log('🔧 Clique no botão de áudio detectado');
+                    this.toggleAudio();
+                });
+            } else {
+                console.log('⚠️ listenBtn não encontrado, tentando novamente em 100ms...');
+                setTimeout(setupListeners, 100);
+                return;
+            }
 
-        const saveShareBtn = document.getElementById('save-share-btn');
-        console.log('🔧 saveShareBtn encontrado:', !!saveShareBtn);
-        
-        if (saveShareBtn) {
-            saveShareBtn.addEventListener('click', () => {
-                this.showShareScreen();
-            });
-        }
+            const saveShareBtn = document.getElementById('save-share-btn');
+            console.log('🔧 saveShareBtn encontrado:', !!saveShareBtn);
+            
+            if (saveShareBtn) {
+                saveShareBtn.addEventListener('click', () => {
+                    this.showShareScreen();
+                });
+            }
 
-        const newStoryBtn = document.getElementById('new-story-btn');
-        console.log('🔧 newStoryBtn encontrado:', !!newStoryBtn);
-        
-        if (newStoryBtn) {
-            newStoryBtn.addEventListener('click', () => {
-                this.showMainMenu();
-            });
-        }
+            const newStoryBtn = document.getElementById('new-story-btn');
+            console.log('🔧 newStoryBtn encontrado:', !!newStoryBtn);
+            
+            if (newStoryBtn) {
+                newStoryBtn.addEventListener('click', () => {
+                    this.showMainMenu();
+                });
+            }
 
-        const backBtn = document.getElementById('back-btn');
-        console.log('🔧 backBtn encontrado:', !!backBtn);
-        
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                this.showMainMenu();
-            });
-        }
-        
-        console.log('🔧 Event listeners configurados');
+            const backBtn = document.getElementById('back-btn');
+            console.log('🔧 backBtn encontrado:', !!backBtn);
+            
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    this.showMainMenu();
+                });
+            }
+            
+            console.log('🔧 Event listeners configurados');
+        };
+
+        // Tentar configurar os listeners
+        setupListeners();
     }
 
     showVoiceCaptureScreen() {
