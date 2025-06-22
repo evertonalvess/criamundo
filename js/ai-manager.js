@@ -53,6 +53,8 @@ class AIManager {
      */
     async generateStory(params = {}) {
         console.log('🔍 AI Manager - generateStory chamado com params:', params);
+        console.log('🔍 AI Manager - isInitialized:', this.isInitialized);
+        console.log('🔍 AI Manager - apiKey:', this.apiKey ? 'Configurada' : 'Não configurada');
         
         if (!this.isInitialized) {
             console.log('⚠️ AI Manager não inicializado - usando fallback');
@@ -73,6 +75,7 @@ class AIManager {
             return parsedStory;
         } catch (error) {
             console.error('❌ Erro ao gerar história com OpenAI:', error);
+            console.error('❌ Detalhes do erro:', error.message);
             return this.getFallbackStory(params);
         }
     }
@@ -170,34 +173,48 @@ class AIManager {
      * Chama OpenAI API
      */
     async callOpenAI(prompt) {
+        console.log('🔧 callOpenAI - Iniciando chamada...');
+        console.log('🔧 callOpenAI - API Key:', this.apiKey ? 'Presente' : 'Ausente');
+        console.log('🔧 callOpenAI - Model:', this.config.openai.model);
+        
+        const requestBody = {
+            model: this.config.openai.model,
+            messages: [
+                {
+                    role: 'system',
+                    content: this.config.openai.systemPrompt
+                },
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ],
+            max_tokens: this.config.openai.maxTokens,
+            temperature: this.config.openai.temperature
+        };
+        
+        console.log('🔧 callOpenAI - Request body:', requestBody);
+        
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.apiKey}`
             },
-            body: JSON.stringify({
-                model: this.config.openai.model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: this.config.openai.systemPrompt
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: this.config.openai.maxTokens,
-                temperature: this.config.openai.temperature
-            })
+            body: JSON.stringify(requestBody)
         });
 
+        console.log('🔧 callOpenAI - Response status:', response.status);
+        console.log('🔧 callOpenAI - Response ok:', response.ok);
+
         if (!response.ok) {
-            throw new Error(`OpenAI API error: ${response.status}`);
+            const errorText = await response.text();
+            console.error('🔧 callOpenAI - Error response:', errorText);
+            throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
+        console.log('🔧 callOpenAI - Response data:', data);
         return data.choices[0].message.content;
     }
 
