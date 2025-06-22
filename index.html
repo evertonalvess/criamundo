@@ -14,7 +14,7 @@
         <div id="home-screen" class="screen active">
             <div class="container">
                 <div class="logo">
-                    <h1>🌟 Criamundo</h1>
+                    <h1>Criamundo</h1>
                     <p class="subtitle">Criando Histórias Mágicas com IA</p>
                 </div>
                 
@@ -30,12 +30,10 @@
                     
                     <div class="action-buttons">
                         <button id="create-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-icon">🎤</span>
                             <span class="btn-text">Criar História com Voz</span>
                         </button>
                         
                         <button id="create-story-ai-btn" class="btn btn-secondary btn-large">
-                            <span class="btn-icon">🤖</span>
                             <span class="btn-text">Criar História com IA</span>
                         </button>
                         
@@ -54,25 +52,17 @@
         <!-- Tela: Conte sua história -->
         <div id="voiceCaptureScreen" class="screen">
             <div class="header">
-                <button class="back-btn" onclick="app.showMainMenu()">← Voltar</button>
-                <h1>🎤 Conte sua história</h1>
+                <button class="back-btn" onclick="app.showMainMenu()">Voltar</button>
+                <h1>Conte sua história</h1>
             </div>
             
             <div class="content">
                 <div class="voice-instructions">
                     <div class="instruction-text" id="instructionText">
-                        <p>Oi amiguinho! 👋</p>
-                        <p>Vou te ajudar a criar uma história mágica! ✨</p>
-                        <p>Primeiro, me conte sobre:</p>
-                        <ul>
-                            <li>🧸 Que personagem você quer na história?</li>
-                            <li>🌍 Onde a história vai acontecer?</li>
-                            <li>🎭 Que aventura você quer?</li>
-                        </ul>
-                        <p>Pode falar tudo que vier na sua cabeça! 😊</p>
+                        <p>Me diga como você quer a história</p>
                     </div>
                     <button class="pause-btn" id="pauseBtn" onclick="app.toggleInstructions()">
-                        ⏸️ Pausar
+                        Pausar
                     </button>
                 </div>
                 
@@ -92,20 +82,20 @@
                     
                     <div class="voice-controls">
                         <button class="voice-btn" id="startVoiceBtn" onclick="app.startVoiceCapture()">
-                            🎤 Começar a Gravar
+                            Começar a Gravar
                         </button>
                         <button class="voice-btn" id="stopVoiceBtn" onclick="app.stopVoiceCapture()" style="display: none;">
-                            ⏹️ Parar Gravação
+                            Parar Gravação
                         </button>
                         <button class="play-btn" id="playThemeBtn" onclick="app.playCapturedTheme()" style="display: none;">
-                            ▶️ Ouvir o que eu falei
+                            Ouvir o que eu falei
                         </button>
                     </div>
                 </div>
                 
                 <div class="story-creation">
                     <button class="create-story-btn" id="createStoryBtn" onclick="app.createStoryFromVoice()" style="display: none;">
-                        ✨ Criar Minha História Mágica!
+                        Criar Minha História Mágica!
                     </button>
                 </div>
             </div>
@@ -160,12 +150,10 @@
                     
                     <div class="ai-controls">
                         <button id="generate-ai-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-icon">🤖</span>
                             <span class="btn-text">Criar História Mágica</span>
                         </button>
                         
                         <button id="random-story-btn" class="btn btn-secondary btn-large">
-                            <span class="btn-icon">🎲</span>
                             <span class="btn-text">História Surpresa</span>
                         </button>
                     </div>
@@ -230,17 +218,14 @@
                     
                     <div class="story-controls">
                         <button id="listen-btn" class="btn btn-primary">
-                            <span class="btn-icon">🔊</span>
                             <span class="btn-text">Ouvir História</span>
                         </button>
                         
                         <button id="save-share-btn" class="btn btn-secondary">
-                            <span class="btn-icon">💾</span>
                             <span class="btn-text">Salvar & Compartilhar</span>
                         </button>
                         
                         <button id="new-story-btn" class="btn btn-tertiary">
-                            <span class="btn-icon">✨</span>
                             <span class="btn-text">Nova História</span>
                         </button>
                     </div>
@@ -271,22 +256,18 @@
                     
                     <div class="action-options">
                         <button class="btn btn-primary btn-large">
-                            <span class="btn-icon">💾</span>
                             <span class="btn-text">Salvar História</span>
                         </button>
                         
                         <button class="btn btn-secondary btn-large">
-                            <span class="btn-icon">📱</span>
                             <span class="btn-text">Compartilhar</span>
                         </button>
                         
                         <button class="btn btn-tertiary btn-large">
-                            <span class="btn-icon">🖨️</span>
                             <span class="btn-text">Imprimir</span>
                         </button>
                         
                         <button id="new-story-btn" class="btn btn-primary btn-large">
-                            <span class="btn-icon">✨</span>
                             <span class="btn-text">Criar Nova História</span>
                         </button>
                     </div>

@@ -197,17 +197,17 @@ class ScreenManager {
             
             utterance.onstart = () => {
                 this.isPlaying = true;
-                document.getElementById('listenBtn').innerHTML = '⏸️ Pausar';
+                document.getElementById('listenBtn').innerHTML = 'Pausar';
             };
             
             utterance.onend = () => {
                 this.isPlaying = false;
-                document.getElementById('listenBtn').innerHTML = '🔊 Ouvir História';
+                document.getElementById('listenBtn').innerHTML = 'Ouvir História';
             };
             
             utterance.onerror = () => {
                 this.isPlaying = false;
-                document.getElementById('listenBtn').innerHTML = '🔊 Ouvir História';
+                document.getElementById('listenBtn').innerHTML = 'Ouvir História';
                 this.showMessage('Erro ao reproduzir áudio');
             };
             
@@ -222,17 +222,17 @@ class ScreenManager {
             speechSynthesis.cancel();
         }
         this.isPlaying = false;
-        document.getElementById('listenBtn').innerHTML = '🔊 Ouvir História';
+        document.getElementById('listenBtn').innerHTML = 'Ouvir História';
     }
 
     toggleInstructions() {
         const pauseBtn = document.getElementById('pauseBtn');
         if (speechSynthesis.speaking) {
             speechSynthesis.pause();
-            pauseBtn.innerHTML = '▶️ Continuar';
+            pauseBtn.innerHTML = 'Continuar';
         } else {
             speechSynthesis.resume();
-            pauseBtn.innerHTML = '⏸️ Pausar';
+            pauseBtn.innerHTML = 'Pausar';
         }
     }
 
@@ -263,7 +263,7 @@ class ScreenManager {
         // Atualizar interface
         document.getElementById('startVoiceBtn').style.display = 'none';
         document.getElementById('stopVoiceBtn').style.display = 'inline-block';
-        document.getElementById('voiceStatus').innerHTML = '<p>🎤 Gravando... Fale agora!</p>';
+        document.getElementById('voiceStatus').innerHTML = '<p>Gravando... Fale agora!</p>';
         document.getElementById('micAnimation').classList.add('recording');
         document.getElementById('capturedText').innerHTML = '<p>Ouvindo você...</p>';
         
@@ -327,12 +327,12 @@ class ScreenManager {
         document.getElementById('micAnimation').classList.remove('recording');
         
         if (this.capturedText.trim()) {
-            document.getElementById('voiceStatus').innerHTML = '<p>✅ História capturada!</p>';
+            document.getElementById('voiceStatus').innerHTML = '<p>História capturada!</p>';
             document.getElementById('playThemeBtn').style.display = 'inline-block';
             document.getElementById('createStoryBtn').style.display = 'inline-block';
         } else {
             document.getElementById('voiceStatus').innerHTML = '<p>Não consegui ouvir nada. Tente novamente!</p>';
-            document.getElementById('capturedText').innerHTML = '<p>Clique em "Começar a Gravar" e conte sua história! 🎤</p>';
+            document.getElementById('capturedText').innerHTML = '<p>Clique em "Começar a Gravar" e conte sua história!</p>';
         }
     }
 
@@ -371,20 +371,19 @@ class ScreenManager {
 
     processVoiceInput(voiceText) {
         // Mostrar tela de carregamento
-        this.showMessage('Criando sua história mágica com IA... ✨');
+        this.showMessage('Criando sua história mágica com IA...');
         
         // Gerar história com IA usando o texto de voz
         this.aiManager.generateStory({ voiceText: voiceText })
             .then(story => {
                 this.currentStory = story;
                 this.showStoryScreen();
-                this.showMessage('História criada com sucesso! 🎉');
+                this.showMessage('História criada com sucesso!');
             })
             .catch(error => {
                 console.error('Erro ao gerar história:', error);
-                this.showMessage('Usando história de exemplo... 📖');
-                this.currentStory = this.getFallbackStory();
-                this.showStoryScreen();
+                this.showMessage('Erro ao gerar história. Tente novamente.');
+                // Não usar fallback automaticamente, deixar o usuário tentar novamente
             });
     }
 
@@ -562,10 +561,10 @@ class ScreenManager {
 
     saveStory() {
         // Simular salvamento
-        this.showMessage('Salvando história... 💾');
+        this.showMessage('Salvando história...');
         
         setTimeout(() => {
-            this.showMessage('História salva com sucesso! 📁');
+            this.showMessage('História salva com sucesso!');
         }, 1500);
     }
 
@@ -587,14 +586,14 @@ class ScreenManager {
             this.showMessage('Copiando link para compartilhamento...');
             // Simular cópia do link
             setTimeout(() => {
-                this.showMessage('Link copiado! Cole em qualquer lugar para compartilhar 📋');
+                this.showMessage('Link copiado! Cole em qualquer lugar para compartilhar');
             }, 1500);
         }
     }
 
     printStory() {
         // Simular impressão
-        this.showMessage('Preparando para impressão... 🖨️');
+        this.showMessage('Preparando para impressão...');
         
         setTimeout(() => {
             const story = this.currentStory || storyData;
@@ -828,7 +827,7 @@ class ScreenManager {
         const scenario = document.getElementById('story-scenario').value;
 
         if (!theme && !characters && !scenario) {
-            this.showMessage('❌ Selecione pelo menos uma opção');
+            this.showMessage('Selecione pelo menos uma opção');
             return;
         }
         
@@ -837,38 +836,34 @@ class ScreenManager {
         if (characters) params.personagens = characters;
         if (scenario) params.cenario = scenario;
 
-        this.showMessage('Criando história mágica com IA... ✨');
+        this.showMessage('Criando história mágica com IA...');
         
         // Gerar história com IA
         this.aiManager.generateStory(params)
             .then(story => {
                 this.currentStory = story;
                 this.showStoryScreen();
-                this.showMessage('História criada com sucesso! 🎉');
+                this.showMessage('História criada com sucesso!');
             })
             .catch(error => {
                 console.error('Erro ao gerar história:', error);
-                this.showMessage('Usando história de exemplo... 📖');
-                this.currentStory = this.getFallbackStory();
-                this.showStoryScreen();
+                this.showMessage('Erro ao gerar história. Tente novamente.');
             });
     }
 
     generateRandomStory() {
-        this.showMessage('Criando história surpresa... 🎲');
+        this.showMessage('Criando história surpresa...');
         
         // Gerar história aleatória com IA
         this.aiManager.generateStory()
             .then(story => {
                 this.currentStory = story;
                 this.showStoryScreen();
-                this.showMessage('História surpresa criada! 🎉');
+                this.showMessage('História surpresa criada!');
             })
             .catch(error => {
                 console.error('Erro ao gerar história aleatória:', error);
-                this.showMessage('Usando história de exemplo... 📖');
-                this.currentStory = this.getFallbackStory();
-                this.showStoryScreen();
+                this.showMessage('Erro ao gerar história. Tente novamente.');
             });
     }
 }

@@ -226,9 +226,12 @@ body {
 }
 
 .instruction-text {
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: 2rem;
+    line-height: 1.4;
     margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: white;
 }
 
 .instruction-text p {
