@@ -540,79 +540,48 @@ class CriamundoApp {
 
     displayStory(story) {
         this.log('=== EXIBINDO HISTÓRIA ===');
-        this.log(`Tipo da história: ${typeof story}`, typeof story === 'object' ? 'WARN' : 'INFO');
-        
-        if (typeof story === 'object') {
-            this.log(`Propriedades da história: ${Object.keys(story).join(', ')}`);
-        }
-        
-        this.showScreen('loading-screen');
-        
-        // Aguardar um pouco para mostrar a tela de carregamento
-        setTimeout(() => {
-            const storyScreen = document.getElementById('story-screen');
-            const storyTitle = document.getElementById('story-title');
-            const storyContent = document.getElementById('story-content');
-            
-            if (storyScreen && storyTitle && storyContent) {
-                this.log('Elementos da história encontrados, configurando...');
-                
-                // Extrair título e conteúdo da história
-                let title = 'História Especial';
-                let content = '';
-                
-                if (typeof story === 'object') {
-                    // Formato do AI Manager: { title, paragraphs: [{ text }] }
-                    title = story.title || story.name || 'História Especial';
-                    
-                    if (story.paragraphs && Array.isArray(story.paragraphs)) {
-                        // Formato com paragraphs
-                        content = story.paragraphs.map(p => 
-                            typeof p === 'string' ? p : p.text || p
-                        ).join('<br><br>');
-                    } else if (story.content) {
-                        // Formato com content
-                        content = story.content;
-                    } else if (story.text) {
-                        // Formato com text
-                        content = story.text;
-                    } else {
-                        // Fallback
-                        content = JSON.stringify(story);
-                    }
+        this.log(`Tipo da história: ${typeof story}`, 'WARN');
+        if (story && story.title && story.story) {
+            this.log('Propriedades da história: ' + Object.keys(story).join(', '));
+
+            // 1. Mostrar a tela da história PRIMEIRO
+            this.screenManager.showScreen('story-screen');
+
+            // 2. Preencher o conteúdo AGORA que a tela está visível
+            try {
+                const storyTitleEl = document.getElementById('story-title');
+                const storyTextEl = document.getElementById('story-text');
+
+                if (storyTitleEl && storyTextEl) {
+                    storyTitleEl.textContent = story.title;
+                    storyTextEl.innerHTML = story.story.replace(/\\n/g, '<br><br>');
                 } else {
-                    content = story;
+                    throw new Error('Elementos #story-title ou #story-text não encontrados no DOM.');
                 }
-                
-                storyTitle.textContent = title;
-                storyContent.innerHTML = content;
-                
-                this.showScreen('story-screen');
-                this.log('Tela da história exibida');
-                
-                // Configurar botões da tela de história APÓS a tela ser exibida
-                setTimeout(() => {
-                    this.setupStoryScreenButtons();
-                }, 100);
-                
-                // Falar a história
-                if (this.audioPermissionGranted) {
-                    this.log('Narrando história...');
-                    // Usar textContent para remover HTML tags na narração
-                    const textToSpeak = storyContent.textContent || content;
-                    this.voiceManager.speak(textToSpeak, () => {
-                        this.log('História narrada com sucesso');
-                    });
-                } else {
-                    this.log('Permissão de áudio perdida, não narrando história', 'WARN');
-                }
-            } else {
-                this.log('ERRO: Elementos da história não encontrados', 'ERROR');
+            } catch (error) {
+                this.log(error.message, 'ERROR');
+                this.displayError('Ocorreu um problema ao tentar mostrar a história.');
+                this.resetToWelcomeScreen();
+                return;
             }
-        }, 1000);
+
+            // 3. Configurar os botões
+            this.setupStoryScreenButtons(story);
+
+        } else {
+            this.log('Objeto de história inválido recebido.', 'ERROR');
+            this.displayError('A história recebida estava vazia ou mal formatada.');
+            this.resetToWelcomeScreen();
+        }
     }
 
-    setupStoryScreenButtons() {
+    setupStoryScreenButtons(story) {
+        // Garantir que os botões só sejam configurados uma vez
+        if (this.storyScreenButtonsConfigured) {
+            return;
+        }
+        this.storyScreenButtonsConfigured = true;
+        
         this.log('=== CONFIGURANDO BOTÕES DA TELA DE HISTÓRIA ===');
         
         // Aguardar um pouco para garantir que os elementos estão no DOM
@@ -913,7 +882,12 @@ class CriamundoApp {
     }
 }
 
-// Inicializar aplicação quando o DOM estiver carregado
-document.addEventListener('DOMContentLoaded', async () => {
-    window.app = new CriamundoApp();
+// Garantir que a aplicação seja inicializada apenas uma vez (Padrão Singleton)
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.criamundoAppInstance) {
+        console.log('Criando nova instância do CriamundoApp.');
+        window.criamundoAppInstance = new CriamundoApp();
+    } else {
+        console.log('Instância do CriamundoApp já existe. Ignorando nova criação.');
+    }
 });
