@@ -533,6 +533,153 @@ class ScreenManager {
             p.textContent = typeof paragraph === 'string' ? paragraph : paragraph.text;
             storyContainer.appendChild(p);
         });
+
+        // Atualizar ilustrações baseadas no conteúdo da história
+        this.updateStoryIllustrations(story);
+    }
+
+    updateStoryIllustrations(story) {
+        console.log('🎨 Atualizando ilustrações para:', story.title);
+        
+        // Extrair elementos da história para gerar ilustrações apropriadas
+        const storyText = story.paragraphs.map(p => typeof p === 'string' ? p : p.text).join(' ');
+        const elements = this.extractIllustrationElements(storyText);
+        
+        // Atualizar ilustração principal
+        this.updateMainIllustration(elements);
+        
+        // Atualizar ilustração de preview
+        this.updatePreviewIllustration(elements);
+    }
+
+    extractIllustrationElements(storyText) {
+        const text = storyText.toLowerCase();
+        const elements = {
+            characters: [],
+            setting: '',
+            theme: '',
+            objects: []
+        };
+
+        // Detectar personagens
+        const characterKeywords = {
+            'gato': '🐱', 'gatinho': '🐱', 'gatinhos': '🐱🐱🐱',
+            'cachorro': '🐕', 'cachorrinho': '🐕',
+            'dragão': '🐉', 'dragões': '🐉🐉',
+            'fada': '🧚‍♀️', 'fadas': '🧚‍♀️🧚‍♀️',
+            'princesa': '👸', 'príncipe': '🤴',
+            'unicórnio': '🦄', 'unicórnios': '🦄🦄',
+            'sereia': '🧜‍♀️', 'sereias': '🧜‍♀️🧜‍♀️',
+            'pássaro': '🐦', 'pássaros': '🐦🐦',
+            'urso': '🐻', 'coelho': '🐰', 'raposa': '🦊',
+            'leão': '🦁', 'tigre': '🐯', 'elefante': '🐘',
+            'girafa': '🦒', 'criança': '👶', 'crianças': '👶👶'
+        };
+
+        for (const [keyword, emoji] of Object.entries(characterKeywords)) {
+            if (text.includes(keyword)) {
+                elements.characters.push(emoji);
+            }
+        }
+
+        // Detectar cenário
+        const settingKeywords = {
+            'floresta': '🌲🌳', 'mata': '🌲🌳', 'árvores': '🌲🌳',
+            'castelo': '🏰', 'palácio': '🏰', 'torre': '🗼',
+            'espaço': '🚀', 'estrelas': '⭐', 'lua': '🌙', 'planeta': '🪐',
+            'mar': '🌊', 'oceano': '🌊', 'praia': '🏖️', 'ilha': '🏝️',
+            'montanha': '⛰️', 'montanhas': '⛰️⛰️',
+            'cidade': '🏙️', 'rua': '🛣️', 'casa': '🏠',
+            'nuvens': '☁️', 'céu': '☁️', 'nuvem': '☁️'
+        };
+
+        for (const [keyword, emoji] of Object.entries(settingKeywords)) {
+            if (text.includes(keyword)) {
+                elements.setting = emoji;
+                break;
+            }
+        }
+
+        // Detectar tema
+        if (text.includes('amizade') || text.includes('amigo')) {
+            elements.theme = '💕';
+        } else if (text.includes('coragem') || text.includes('bravo')) {
+            elements.theme = '⚔️';
+        } else if (text.includes('magia') || text.includes('mágico')) {
+            elements.theme = '✨';
+        } else if (text.includes('aventura') || text.includes('explorar')) {
+            elements.theme = '🗺️';
+        }
+
+        // Detectar objetos
+        const objectKeywords = {
+            'varinha': '🪄', 'coroa': '👑', 'tesouro': '💎',
+            'livro': '📚', 'chave': '🗝️', 'lâmpada': '💡',
+            'flor': '🌸', 'flores': '🌸🌸', 'árvore': '🌳'
+        };
+
+        for (const [keyword, emoji] of Object.entries(objectKeywords)) {
+            if (text.includes(keyword)) {
+                elements.objects.push(emoji);
+            }
+        }
+
+        // Fallback se não encontrou nada
+        if (elements.characters.length === 0) {
+            elements.characters = ['🐱', '🐕'];
+        }
+        if (!elements.setting) {
+            elements.setting = '🏰';
+        }
+        if (!elements.theme) {
+            elements.theme = '✨';
+        }
+
+        console.log('🎨 Elementos extraídos:', elements);
+        return elements;
+    }
+
+    updateMainIllustration(elements) {
+        const illustrationContainer = document.querySelector('.story-illustration-large');
+        if (!illustrationContainer) return;
+
+        // Limpar ilustração atual
+        illustrationContainer.innerHTML = '';
+
+        // Criar nova ilustração baseada nos elementos
+        const characters = elements.characters.slice(0, 3).join(''); // Máximo 3 personagens
+        const setting = elements.setting;
+        const theme = elements.theme;
+        const objects = elements.objects.slice(0, 2).join(''); // Máximo 2 objetos
+
+        // Criar elementos da ilustração
+        const illustrationHTML = `
+            <div class="illustration-character" style="font-size: 3rem; margin: 10px;">${characters}</div>
+            <div class="illustration-setting" style="font-size: 2.5rem; margin: 10px;">${setting}</div>
+            <div class="illustration-theme" style="font-size: 2rem; margin: 10px;">${theme}</div>
+            <div class="illustration-objects" style="font-size: 1.5rem; margin: 10px;">${objects}</div>
+        `;
+
+        illustrationContainer.innerHTML = illustrationHTML;
+    }
+
+    updatePreviewIllustration(elements) {
+        const previewContainer = document.querySelector('.story-illustration-preview');
+        if (!previewContainer) return;
+
+        // Limpar ilustração atual
+        previewContainer.innerHTML = '';
+
+        // Criar ilustração simplificada para preview
+        const characters = elements.characters.slice(0, 2).join(''); // Máximo 2 personagens
+        const setting = elements.setting;
+
+        const previewHTML = `
+            <div class="preview-character" style="font-size: 2rem; margin: 5px;">${characters}</div>
+            <div class="preview-setting" style="font-size: 1.5rem; margin: 5px;">${setting}</div>
+        `;
+
+        previewContainer.innerHTML = previewHTML;
     }
 
     animateStoryElements() {
@@ -814,6 +961,9 @@ class ScreenManager {
         this.currentScreen = 'story';
         this.updateScreen();
         this.loadStory();
+        
+        // Configurar event listeners da tela de história
+        this.setupStoryScreenListeners();
     }
 
     showAICreationScreen() {
