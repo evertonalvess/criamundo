@@ -508,7 +508,14 @@ class CriamundoApp {
             // 1. Mostrar a tela da história PRIMEIRO
             this.screenManager.showScreen('story-screen');
 
-            // 2. Preencher o conteúdo AGORA que a tela está visível
+            // 2. Limpar o conteúdo anterior (especialmente imagens) para evitar duplicatas
+            const storyContainer = document.querySelector('.story-container-v2');
+            if (storyContainer) {
+                const oldImages = storyContainer.querySelectorAll('img');
+                oldImages.forEach(img => img.remove());
+            }
+
+            // 3. Preencher o conteúdo AGORA que a tela está visível
             try {
                 const storyTitleEl = document.getElementById('story-title');
                 const storyTextEl = document.getElementById('story-text');
@@ -517,7 +524,7 @@ class CriamundoApp {
                     storyTitleEl.textContent = story.title;
                     storyTextEl.innerHTML = story.story.replace(/\\n/g, '<br><br>');
 
-                    // Adicionar a imagem se ela existir
+                    // Adicionar a nova imagem se ela existir na história
                     if (story.image) {
                         const imgEl = document.createElement('img');
                         imgEl.src = story.image;
@@ -527,6 +534,9 @@ class CriamundoApp {
                             max-width: 300px;
                             border-radius: 10px;
                             margin-bottom: 20px;
+                            display: block;
+                            margin-left: auto;
+                            margin-right: auto;
                         `;
                         // Inserir a imagem antes do texto
                         storyTextEl.parentNode.insertBefore(imgEl, storyTextEl);
@@ -542,19 +552,8 @@ class CriamundoApp {
                 return;
             }
 
-            // 3. Configurar os botões
+            // 4. Configurar os botões
             this.setupStoryScreenButtons(story);
-
-            // Limpar imagens antigas ao exibir uma nova história
-            const storyContainer = document.querySelector('.story-container-v2');
-            if (storyContainer) {
-                const oldImages = storyContainer.querySelectorAll('img');
-                oldImages.forEach(img => {
-                    // Não remover a imagem que acabamos de adicionar
-                    if (img.src.endsWith(story.image)) return;
-                    img.remove();
-                });
-            }
 
         } else {
             this.log('Objeto de história inválido recebido.', 'ERROR');
