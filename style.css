@@ -425,7 +425,11 @@ body {
 /* --- Estilos antigos serão removidos ou adaptados abaixo --- */
 /* (Vou manter as outras telas por enquanto, mas escondidas) */
 #story-screen, #loading-screen {
-    /* ... estilos mantidos mas adaptados para o novo design ... */
+    background-image: url('../img/Menino2.png');
+    background-size: cover;
+    background-position: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
 }
 
 /* Reset e configurações básicas */
@@ -1307,4 +1311,91 @@ body {
 .btn:focus {
     outline: 3px solid #fff;
     outline-offset: 2px;
+}
+
+#story-screen .story-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Alinha título no topo, botões embaixo */
+    height: 100%;
+    width: 100%;
+    position: relative;
+    z-index: 2; /* Garante que o conteúdo fique acima do background */
+}
+
+#story-screen .story-header {
+    padding-top: 5vh; /* Posição similar à da tela de boas-vindas */
+    text-align: center;
+}
+
+#story-screen #story-title {
+    font-size: 2.5rem;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+#story-screen .story-content {
+    background-color: rgba(255, 255, 255, 0.8); /* Fundo branco com 80% de opacidade */
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px auto; /* Centraliza horizontalmente */
+    max-width: 650px;
+    width: 90%;
+    height: 50vh; /* Metade da altura da tela */
+    overflow-y: auto;
+    color: #333; /* Texto escuro para legibilidade */
+}
+
+#story-screen .story-controls {
+    padding-bottom: 5vh;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+#story-screen .story-controls {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilos para a nova tela de história (v2) */
+.story-container-v2 {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.story-title-v2 {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    color: var(--white-pure);
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+    flex-shrink: 0; /* Impede que o título encolha */
+}
+
+.story-text-v2 {
+    flex-grow: 1; /* Faz a caixa de texto ocupar o espaço disponível */
+    background-color: rgba(255, 255, 255, 0.85);
+    color: var(--black-soft);
+    border-radius: var(--border-radius-main);
+    padding: 30px;
+    font-size: 1.2rem; /* Fonte maior */
+    line-height: 1.6;
+    overflow-y: auto; /* Adiciona rolagem se o texto for grande */
+    text-align: left;
+    box-shadow: var(--shadow-main);
+}
+
+.story-buttons-v2 {
+    margin-top: 30px;
+    flex-shrink: 0; /* Impede que os botões encolham */
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Espaço entre os botões */
 } 

@@ -1,4 +1,3 @@
-// CriamundoApp - Nova implementação com fluxo automático
 class CriamundoApp {
     constructor() {
         this.voiceManager = new VoiceManager();
@@ -490,7 +489,7 @@ class CriamundoApp {
         this.showAudioPermissionModal();
     }
 
-    generateStory() {
+    async generateStory() {
         this.log('=== GERANDO HISTÓRIA ===');
         this.log(`Estado atual - buttonActive: ${this.buttonActive}, isProcessing: ${this.isProcessing}, capturedText: "${this.capturedText}"`);
         this.log(`Stack trace da chamada:`, new Error().stack);
@@ -513,24 +512,30 @@ class CriamundoApp {
         
         // Resetar flags
         this.buttonActive = false;
-        this.isProcessing = false;
-        this.log('Flags resetadas: buttonActive=false, isProcessing=false');
+        this.isProcessing = true;
+        this.log('Flags resetadas: buttonActive=false, isProcessing=true');
         
         // Gerar história usando o AI Manager
         this.log('Chamando AI Manager para gerar história...');
         this.log(`Texto capturado: "${this.capturedText}"`);
         
-        // Passar o texto capturado como parâmetro
-        this.aiManager.generateStory({ voiceText: this.capturedText })
-            .then(story => {
-                this.log('História gerada com sucesso!');
-                this.log(`Tipo da história retornada: ${typeof story}`);
-                this.displayStory(story);
-            })
-            .catch(error => {
-                this.log(`Erro ao gerar história: ${error}`, 'ERROR');
-                this.displayError('Erro ao gerar história. Tente novamente.');
-            });
+        const userPrompt = this.capturedText || 'Crie uma história sobre um dragão amigável e uma fada curiosa.';
+        this.log(`Prompt para IA: "${userPrompt}"`);
+        
+        // Gerar história com o AI Manager
+        const story = await this.aiManager.generateStory({ voiceText: userPrompt });
+        
+        if (story && story.title && story.story) {
+            this.log('História gerada com sucesso!', 'SUCCESS');
+            this.displayStory(story);
+        } else {
+            this.log(`Erro ao gerar história: Story object is missing title or story property`, 'ERROR');
+            this.displayError('Oops! Não conseguimos criar sua história. Tente novamente!');
+            // Adicionado para redefinir o fluxo e voltar à tela inicial em caso de erro
+            setTimeout(() => {
+                this.resetToWelcomeScreen();
+            }, 3000); // Aguarda 3 segundos antes de resetar
+        }
     }
 
     displayStory(story) {

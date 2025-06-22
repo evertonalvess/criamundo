@@ -231,39 +231,52 @@ class AIManager {
         const keywords = this.extractKeywords(voiceText);
         
         const prompt = this.buildPrompt(keywords);
-        
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'Você é um contador de histórias mágicas para crianças. Crie histórias divertidas, educativas e apropriadas para a idade.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: 800,
-                temperature: 0.8
-            })
-        });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`OpenAI API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+        const timeout = 20000; // 20 segundos
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'Você é um contador de histórias mágicas para crianças. Crie histórias divertidas, educativas e apropriadas para a idade.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(id);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                const message = errorData?.error?.message || `HTTP error! status: ${response.status}`;
+                throw new Error(`Erro na API OpenAI: ${message}`);
+            }
+
+            const data = await response.json();
+            return this.parseStoryResponse(data);
+
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('A requisição para a IA demorou muito e foi cancelada.');
+            }
+            // Re-lança outros erros para serem tratados pelo chamador
+            throw error;
         }
-
-        const data = await response.json();
-        const storyText = data.choices[0].message.content;
-        
-        return this.parseStoryResponse(storyText);
     }
 
     /**
@@ -580,12 +593,29 @@ class AIManager {
     }
 
     parseStoryResponse(response) {
-        const lines = response.split('\n').filter(line => line.trim());
-        const title = lines.find(line => line.startsWith('TÍTULO:'))?.replace('TÍTULO:', '').trim() || 'História Mágica';
-        const paragraphs = lines.filter(line => !line.startsWith('TÍTULO:') && line.trim());
+        console.log('Parsing OpenAI response:', response);
+        // Validação da resposta da API
+        if (!response || !response.choices || response.choices.length === 0 || !response.choices[0].message || !response.choices[0].message.content) {
+            console.error('Resposta da API da OpenAI em formato inválido ou sem conteúdo.');
+            return null; // Retorna null para indicar falha no parsing
+        }
+
+        const storyText = response.choices[0].message.content;
+        const lines = storyText.split('\\n').filter(line => line.trim() !== '');
+        
+        const titleLine = lines.find(line => line.toUpperCase().startsWith('TÍTULO:'));
+        const title = titleLine ? titleLine.replace(/TÍTULO:/i, '').trim() : 'História Mágica';
+        
+        const paragraphs = lines.filter(line => !line.toUpperCase().startsWith('TÍTULO:'));
+
+        if (paragraphs.length === 0) {
+            console.error('Não foi possível extrair parágrafos da resposta da IA.');
+            return null;
+        }
         
         return {
             title: title,
+            story: paragraphs.join('\\n\\n'),
             paragraphs: paragraphs.map(p => ({ text: p.trim() }))
         };
     }
@@ -615,7 +645,7 @@ class AIManager {
         return keywords.length > 0 ? keywords : ['aventura', 'amizade'];
     }
 
-    generateFallbackStory(params = {}) {
+    async generateFallbackStory(params = {}) {
         const { voiceText = '' } = params;
         const keywords = this.extractKeywords(voiceText);
         
@@ -660,6 +690,9 @@ class AIManager {
             }
         }
         
+        // Adiciona a propriedade 'story' para padronizar o objeto
+        selectedStory.story = selectedStory.paragraphs.map(p => p.text).join('\\n\\n');
+
         return selectedStory;
     }
 
