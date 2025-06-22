@@ -60,7 +60,7 @@ body {
 
 /* --- Tela de Boas-Vindas (Nova Tela Inicial) --- */
 #welcome-screen {
-    background-image: url('../img/Menino1.png');
+    background-image: url('img/Menino1.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
