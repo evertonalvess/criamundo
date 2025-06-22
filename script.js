@@ -356,7 +356,7 @@ class CriamundoApp {
                 this.log(`Processando texto capturado: "${this.capturedText}"`);
                 this.confirmAndProceed();
             } else {
-                this.log('Nenhum texto capturado, reiniciando...', 'WARN');
+                this.log('Nenhum texto capturado ou erro de gravação, reiniciando...', 'WARN');
                 setTimeout(() => {
                     this.resetFlow();
                     this.startInteractionLoop();
@@ -366,16 +366,11 @@ class CriamundoApp {
         
         this.voiceManager.onError = (error) => {
             this.log(`Erro na gravação: ${error}`, 'ERROR');
-            this.hideRecordingAnimation();
-            
+            // A lógica de reinicialização agora é centralizada em 'onRecordingEnd'.
+            // Aqui, tratamos apenas de casos específicos que não são de fluxo, como permissão.
             if (error === 'not-allowed') {
                 this.log('Permissão negada, mostrando modal...', 'ERROR');
                 this.showAudioPermissionModal();
-            } else {
-                setTimeout(() => {
-                    this.resetFlow();
-                    this.startInteractionLoop();
-                }, 2000);
             }
         };
         
